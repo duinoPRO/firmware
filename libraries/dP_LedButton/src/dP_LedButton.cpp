@@ -19,13 +19,13 @@ void dP_LedButton::begin()
 
 bool dP_LedButton::readSwitch(uint8_t sw)
 {
-    if (sw==1)
+    if (sw == 1)
     {
-        return !pin(1).read();
+	return !pin(1).read();
     }
     else
     {
-        return !pin(2).read();
+	return !pin(2).read();
     }
 }
 
