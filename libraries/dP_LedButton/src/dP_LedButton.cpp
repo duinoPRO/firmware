@@ -11,7 +11,7 @@ void dP_LedButton::begin()
     pin(4).mode(OUTPUT);
     pin(5).mode(OUTPUT);
     pin(6).mode(OUTPUT);
-	pin(3).write(LOW);
+    pin(3).write(LOW);
     pin(4).write(LOW);
     pin(5).write(LOW);
     pin(6).write(LOW);
@@ -21,11 +21,11 @@ bool dP_LedButton::readSwitch(uint8_t sw)
 {
     if (sw==1)
     {
-        return pin(1).read();
+        return !pin(1).read();
     }
     else
     {
-        return pin(2).read();
+        return !pin(2).read();
     }
 }
 
