@@ -1,5 +1,5 @@
 
-#include <dP_Xbee.h>
+#include <dP_XBee.h>
 #include <SPI.h>
 
 // #define XBEE_DEBUG 1
@@ -46,11 +46,11 @@
 
 #define TX_FRAME_OVERHEADS (TRANSMIT_DATA - FRAME_TYPE)
 
-dP_Xbee::dP_Xbee(int id) : Module(id) 
+dP_XBee::dP_XBee(int id) : Module(id) 
 {
 };
 
-void dP_Xbee::beginUart(unsigned long baud)
+void dP_XBee::beginUart(unsigned long baud)
 {
 	begin();
     HardwareSerial& s = serial();
@@ -59,7 +59,7 @@ void dP_Xbee::beginUart(unsigned long baud)
 }
 
 
-void dP_Xbee::begin()
+void dP_XBee::begin()
 {
 	spiSelect().mode(OUTPUT);
     spiSelect().write(HIGH);
@@ -74,24 +74,24 @@ void dP_Xbee::begin()
 }
 
 
-void dP_Xbee::lowpower(bool lowpower)
+void dP_XBee::lowpower(bool lowpower)
 {
     pin(SLEEP_PIN).write(lowpower);
 }
 
-HardwareSerial& dP_Xbee::serial()
+HardwareSerial& dP_XBee::serial()
 {
     // In a Due version of this, different serial ports would be returned, based on id.
     return Serial;
 }
 
 
-void dP_Xbee::beginSpi()
+void dP_XBee::beginSpi()
 {
 
 }
 
-uint8_t dP_Xbee::spiReadByte()
+uint8_t dP_XBee::spiReadByte()
 {
 	uint8_t val;
 	SPI.beginTransaction(SPISettings(MY_SPEED_MAX, MY_DATA_ORDER, MY_DATA_MODE));
@@ -102,7 +102,7 @@ uint8_t dP_Xbee::spiReadByte()
 	return val;
 }
 
-uint8_t dP_Xbee::spiWriteByte(uint8_t data)
+uint8_t dP_XBee::spiWriteByte(uint8_t data)
 {
 	uint8_t val;
 	SPI.beginTransaction(SPISettings(MY_SPEED_MAX, MY_DATA_ORDER, MY_DATA_MODE));
@@ -113,7 +113,7 @@ uint8_t dP_Xbee::spiWriteByte(uint8_t data)
 	return val;
 }
 
-bool dP_Xbee::readPacket()
+bool dP_XBee::readPacket()
 {
 	uint8_t data;
 	uint16_t byteCount = 0;
@@ -125,7 +125,7 @@ bool dP_Xbee::readPacket()
 	rxPktLen = 0;
 	
 	#ifdef XBEE_DEBUG
-	// Serial.println("dP_Xbee::readPacket()");
+	// Serial.println("dP_XBee::readPacket()");
 	#endif
 	
 	
@@ -215,12 +215,12 @@ bool dP_Xbee::readPacket()
 	return false;
 }
 
-char *dP_Xbee::lastPacket()
+char *dP_XBee::lastPacket()
 {
 	return rxPkt;
 }
 
-void dP_Xbee::sendPacket(char *txPkt, uint8_t txLen, const uint8_t *destAddr)
+void dP_XBee::sendPacket(char *txPkt, uint8_t txLen, const uint8_t *destAddr)
 {
 	uint8_t i;
 	uint8_t checksum;
