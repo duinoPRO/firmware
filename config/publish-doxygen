@@ -1,0 +1,23 @@
+REPO_PATH=git@github.com:duinopro/duinopro.github.io.git
+HTML_PATH=doc/html
+COMMIT_USER="kmclifton"
+COMMIT_EMAIL="kristen.clifton@duinopro.cc"
+CHANGESET=$(git rev-parse --verify HEAD)
+
+rm -rf ${HTML_PATH}
+mkdir -p ${HTML_PATH}
+git clone -b master "${REPO_PATH}" --single-branch ${HTML_PATH}
+
+cd ${HTML_PATH}
+git rm -rf .
+cd -
+
+doxygen config/Doxyfile
+
+cd ${HTML_PATH}
+git add .
+git config user.name "${COMMIT_USER}"
+git config user.email "${COMMIT_EMAIL}"
+git commit -m "Automated documentation build for changeset ${CHANGESET}."
+git push origin master
+cd -

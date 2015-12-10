@@ -10,4 +10,6 @@ before_install:
 - chmod 0600 config/travisci_rsa
 - cp config/travisci_rsa ~/.ssh/id_rsa
 script:
-- doxygen config/Doxyfile
+- true
+after_success:
+- ./config/publish-doxygen
