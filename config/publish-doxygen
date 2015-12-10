@@ -27,5 +27,7 @@ git config user.name "${COMMIT_USER}"
 git config user.email "${COMMIT_EMAIL}"
 git commit -m "Automated documentation build for changeset ${CHANGESET}."
 export GIT_SSH_COMMAND="ssh -i $KEY_FILE"
+echo $GIT_SSH_COMMAND
+$GIT_SSH_COMMAND git@github.com
 git push origin master
 cd -
