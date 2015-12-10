@@ -14,8 +14,6 @@ KEY_FILE=$(pwd)/config/travisci_rsa
 rm -rf ${HTML_PATH}
 mkdir -p ${HTML_PATH}
 export GIT_SSH_COMMAND="ssh -i $KEY_FILE"
-echo $GIT_SSH_COMMAND
-$GIT_SSH_COMMAND git@github.com
 git clone -b master "${REPO_PATH}" --single-branch ${HTML_PATH}
 
 cd ${HTML_PATH}
