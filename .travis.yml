@@ -7,7 +7,7 @@ language: cpp
 before_install:
 - openssl aes-256-cbc -K $encrypted_4dc46ccd626b_key -iv $encrypted_4dc46ccd626b_iv
   -in config/travisci_rsa.enc -out config/travisci_rsa -d
-- chmod 0600 config/travisci_rsa
+- chmod 0400 config/travisci_rsa
 - cp config/travisci_rsa ~/.ssh/id_rsa
 - chmod +x config/publish-doxygen
 script:
