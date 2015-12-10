@@ -11,9 +11,13 @@ COMMIT_EMAIL="kristen.clifton@duinopro.cc"
 CHANGESET=$(git rev-parse --verify HEAD)
 KEY_FILE=$(pwd)/config/travisci_rsa
 
+echo host github.com > ~/.ssh/config
+echo "  IdentityFile $KEY_FILE" >> ~/.ssh/config
+
+cat ~/.ssh/config
+
 rm -rf ${HTML_PATH}
 mkdir -p ${HTML_PATH}
-export GIT_SSH_COMMAND="ssh -i $KEY_FILE"
 git clone -b master "${REPO_PATH}" --single-branch ${HTML_PATH}
 
 cd ${HTML_PATH}
