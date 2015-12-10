@@ -1,3 +1,8 @@
+/*! \brief Brief description.
+ *         More description.
+ *  
+ *  Detailed description here.
+ */
 
 #include <dP_ledbutton.h>
 
