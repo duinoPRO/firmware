@@ -1,8 +1,6 @@
-/*! \brief Brief description.
- *         More description.
- *  
- *  Detailed description here.
- */
+/*! \file dP_LedButton.cpp 
+    \brief duinoPRO LED/Button Module library.
+*/
 
 #include <dP_ledbutton.h>
 

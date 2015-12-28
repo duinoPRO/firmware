@@ -5,7 +5,7 @@
 
 #define XBEE_MAX_PACKET_SIZE	(20)
  
-class dP_XBee : public Module {
+class dP_Xbee : public Module {
   private:
 	char rxPkt[XBEE_MAX_PACKET_SIZE+1];
 	uint8_t rxPktLen;
@@ -16,7 +16,7 @@ class dP_XBee : public Module {
     const uint8_t coordinatorAddress[8] = { 0,0,0,0,0,0,0,0 };
     const uint8_t broadcastAddress[8] = { 0,0,0,0,0,0,0xFF,0xFF }; 
   
-	dP_XBee(int id);
+	dP_Xbee(int id);
 	
 	void beginUart(unsigned long baud);
 	void begin(void);
