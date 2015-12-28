@@ -97,6 +97,8 @@ class dP_AccelMagno : public Module {
 		float magnoX();
 		float magnoY();
 		float magnoZ();
+		
+		bool intRead(uint8_t intNum);
 };
 
 #endif /* dP_AccelMagno_H */

@@ -1,8 +1,10 @@
-
+	
 #include <dP_AccelMagno.h>
 #include <SPI.h>
 
 // Module Pins
+#define INT1_PIN 1
+#define INT2_PIN 2
 #define POWERDOWN_PIN 5
 
 // Register Address Definitions
@@ -93,10 +95,13 @@ dP_AccelMagno::dP_AccelMagno(int id) : Module(id)
 
 void dP_AccelMagno::begin()
 {
-    pin(POWERDOWN_PIN).mode(OUTPUT);
-    pin(POWERDOWN_PIN).write(HIGH);
+	pin(INT1_PIN).mode(INPUT);
+	pin(INT2_PIN).mode(INPUT);
+	pin(POWERDOWN_PIN).mode(OUTPUT);
+    pin(POWERDOWN_PIN).write(LOW);
 	spiSelect().mode(OUTPUT);
     spiSelect().write(HIGH);
+	delay(10);
 }
 
 void dP_AccelMagno::lowpower(bool lowpower)
@@ -290,3 +295,12 @@ float dP_AccelMagno::magnoZ()
 	return read16bit(OUT_Z_H_M, OUT_Z_L_M) * magnoLsb;  
 }
 
+bool dP_AccelMagno::intRead(uint8_t intNum)
+{
+	if (intNum == 2) {
+		return pin(INT2_PIN).read();
+	}
+	else {
+		return pin(INT1_PIN).read();
+	}
+}
