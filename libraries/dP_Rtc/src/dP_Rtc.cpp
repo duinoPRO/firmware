@@ -1,5 +1,5 @@
 
-#include <dP_rtc.h>
+#include <dP_Rtc.h>
 #include <SPI.h>
 
 // Module Pins
