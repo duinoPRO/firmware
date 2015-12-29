@@ -11,7 +11,7 @@
   */
 
 // Include the necessary libraries
-#include <dP_rtc.h> // *Update the library's filename when necessary*
+#include <dP_Rtc.h> 
 #include <SPI.h>
 
 // Define an instance of the RTC module
