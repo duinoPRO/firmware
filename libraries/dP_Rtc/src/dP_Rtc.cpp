@@ -68,7 +68,6 @@ void dP_Rtc::writeRegister(uint8_t addr, uint8_t data)
 	SPI.transfer(data);
 	spiSelect().write(HIGH);
 	SPI.endTransaction();
-	return;
 }
 
 void dP_Rtc::setDate(uint16_t year, uint8_t month, uint8_t day)
@@ -83,9 +82,9 @@ void dP_Rtc::setDate(uint16_t year, uint8_t month, uint8_t day)
 	SPI.endTransaction();
 }
 
-void dP_Rtc::setDayWeek(uint8_t dayofweek)
+void dP_Rtc::setDayWeek(uint8_t dayOfWeek)
 {
-	writeRegister(DAY_REG, dayofweek);
+	writeRegister(DAY_REG, dayOfWeek);
 }
 
 void dP_Rtc::setTime(uint8_t hour, uint8_t minute, uint8_t second)
@@ -115,9 +114,9 @@ void dP_Rtc::readDate(uint8_t *year, uint8_t *month, uint8_t *day)
 	SPI.endTransaction();
 }
 
-void dP_Rtc::readDayWeek(uint8_t *dayofweek)
+void dP_Rtc::readDayWeek(uint8_t *dayOfWeek)
 {
-	*dayofweek = readRegister(DAY_REG);
+	*dayOfWeek = readRegister(DAY_REG);
 }
 
 // Accounts for the case where the RTC is operating in 12 hour mode.	
@@ -141,14 +140,11 @@ void dP_Rtc::readTime(uint8_t *hour, uint8_t *minute, uint8_t *second)
 	SPI.endTransaction();
 }
 
-// FAT date and time
-
 uint16_t dP_Rtc::readFatDate()
 {
 	uint8_t year, month, day;
 	readDate(&year,&month,&day);	
 	return (year + 20) << 9 | month << 5 | day; // RTC year 0 is 2000, FAT year 0 is 1980
-	// 2099 is the current highest valid year, but this could be increased to 2199 using the RTC's century bit
 }
 
 uint16_t dP_Rtc::readFatTime()
@@ -158,44 +154,10 @@ uint16_t dP_Rtc::readFatTime()
 	return hour << 11 | minute << 5 | second >> 1;
 }
 
-// Need a string buffer of at least 9 characters
-void dP_Rtc::timeString(char *str)
-{
-	timeString(str, ':');
-	return;
-}
-
-// Need a string buffer of at least 9 characters
-void dP_Rtc::timeString(char *str, char separator)
-{
-	uint8_t hour, minute, second;
-	
-	SPI.beginTransaction(SPISettings(MY_SPEED_MAX, MY_DATA_ORDER, MY_DATA_MODE));
-	spiSelect().write(LOW);
-	SPI.transfer(SECOND_REG);
-	second = SPI.transfer(0x00);
-	minute = SPI.transfer(0x00);
-	hour = SPI.transfer(0x00);
-	spiSelect().write(HIGH);
-	SPI.endTransaction();
-	
-	str[0] = TOP_NIBBLE(hour) + '0';
-	str[1] = BOTTOM_NIBBLE(hour) + '0';
-	str[2] = separator;
-	str[3] = TOP_NIBBLE(minute) + '0';
-	str[4] = BOTTOM_NIBBLE(minute) + '0';
-	str[5] = separator;
-	str[6] = TOP_NIBBLE(second) + '0';
-	str[7] = BOTTOM_NIBBLE(second) + '0';
-	str[8] = 0;
-	return;
-}
-
 // Need a string buffer of at least 11 characters
 void dP_Rtc::dateString(char *str)
 {
 	dateString(str, '-');
-	return;
 }
 
 // Need a string buffer of at least 11 characters
@@ -223,10 +185,40 @@ void dP_Rtc::dateString(char *str, char separator)
 	str[8] = TOP_NIBBLE(day) + '0';
 	str[9] = BOTTOM_NIBBLE(day) + '0';
 	str[10] = 0;
-	return;
 }
 
-// dayofweek replaces day for appropriate alarm modes
+// Need a string buffer of at least 9 characters
+void dP_Rtc::timeString(char *str)
+{
+	timeString(str, ':');
+}
+
+// Need a string buffer of at least 9 characters
+void dP_Rtc::timeString(char *str, char separator)
+{
+	uint8_t hour, minute, second;
+	
+	SPI.beginTransaction(SPISettings(MY_SPEED_MAX, MY_DATA_ORDER, MY_DATA_MODE));
+	spiSelect().write(LOW);
+	SPI.transfer(SECOND_REG);
+	second = SPI.transfer(0x00);
+	minute = SPI.transfer(0x00);
+	hour = SPI.transfer(0x00);
+	spiSelect().write(HIGH);
+	SPI.endTransaction();
+	
+	str[0] = TOP_NIBBLE(hour) + '0';
+	str[1] = BOTTOM_NIBBLE(hour) + '0';
+	str[2] = separator;
+	str[3] = TOP_NIBBLE(minute) + '0';
+	str[4] = BOTTOM_NIBBLE(minute) + '0';
+	str[5] = separator;
+	str[6] = TOP_NIBBLE(second) + '0';
+	str[7] = BOTTOM_NIBBLE(second) + '0';
+	str[8] = 0;
+}
+
+// dayOfWeek replaces day for appropriate alarm modes
 void dP_Rtc::alarmSet(uint8_t alarmnum, uint8_t alarmmode, uint8_t day, uint8_t hour, uint8_t minute, uint8_t second)
 {
 	SPI.beginTransaction(SPISettings(MY_SPEED_MAX, MY_DATA_ORDER, MY_DATA_MODE));
@@ -256,7 +248,6 @@ void dP_Rtc::alarmEnable(uint8_t alarmnum)
 	}
 }
 
-// Disables an alarm and turns its alarm interrupt flag off.
 void dP_Rtc::alarmDisable(uint8_t alarmnum)
 {
 	uint8_t val = readRegister(CONTROL_REG);
@@ -276,21 +267,6 @@ void dP_Rtc::alarmDisable(uint8_t alarmnum)
 	
 }
 
-// Disables both alarms, turns both alarm interrupt flags off, and enables the square wave output from the INT pin.
-void dP_Rtc::alarmIntDisable() 
-{
-	uint8_t val = readRegister(CONTROL_REG);
-	writeRegister(CONTROL_REG, val & 0xF8);
-	val = readRegister(STATUS_REG);
-	writeRegister(STATUS_REG, val & 0xFC);
-}
-
-bool dP_Rtc::alarmIntRead()
-{
-	return !pin(INT_PIN).read();
-}
-
-// Turns an alarm's interrupt flag off without disabling the alarm.
 void dP_Rtc::alarmStop(uint8_t alarmnum)
 {
 	uint8_t val = readRegister(STATUS_REG);
@@ -302,25 +278,32 @@ void dP_Rtc::alarmStop(uint8_t alarmnum)
 	}
 }
 
+bool dP_Rtc::alarmIntRead()
+{
+	return !pin(INT_PIN).read();
+}
+
+void dP_Rtc::alarmIntDisable() 
+{
+	uint8_t val = readRegister(CONTROL_REG);
+	writeRegister(CONTROL_REG, val & 0xF8);
+	val = readRegister(STATUS_REG);
+	writeRegister(STATUS_REG, val & 0xFC);
+}
+
 void dP_Rtc::sqwFreq(uint8_t mode)
 {
 	uint8_t val = readRegister(CONTROL_REG);
-	if (mode == 1) { // 1 Hz
+	if (mode == 0) { // 1 Hz
 		writeRegister(CONTROL_REG, val & 0xE7);
 	}
-	else if (mode == 2) { // 1.024 kHz
+	else if (mode == 1) { // 1.024 kHz
 		writeRegister(CONTROL_REG, (val | 0x08) & 0xEF);
 	}
-	else if (mode == 3) { // 4.096 kHz
+	else if (mode == 2) { // 4.096 kHz
 		writeRegister(CONTROL_REG, (val | 0x10) & 0xF7);
 	}
 	else { // 8.192 kHz
 		writeRegister(CONTROL_REG, val | 0x18);
 	}
-}
-
-// Reads the square wave output pin when it is enabled.
-bool dP_Rtc::sqwRead()
-{
-	return pin(INT_PIN).read();
 }

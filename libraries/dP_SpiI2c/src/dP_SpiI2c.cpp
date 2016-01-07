@@ -30,25 +30,21 @@ void dP_SpiI2c::lowpower(bool lowpower)
     pin(POWERDOWN_PIN).write(lowpower);
 }
 
-// freq is in Hz
 void dP_SpiI2c::setSpiFreq(uint32_t freq)
 {
 	spiFreq = freq;
 }
 
-// order is LSBFIRST or MSBFIRST
 void dP_SpiI2c::setSpiOrder(uint8_t order)
 {
 	spiOrder = order;
 }
 
-// mode is SPI_MODE0, SPI_MODE1, SPI_MODE2 or SPI_MODE3
 void dP_SpiI2c::setSpiMode(uint8_t mode)
 {
 	spiMode = mode;
 }
 
-// Set OR masks for read/write addresses
 void dP_SpiI2c::setSpiRWMasks(uint8_t readMask, uint8_t writeMask)
 {
 	spiReadMask = readMask;

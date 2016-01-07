@@ -1,4 +1,3 @@
-	
 #include <dP_AccelMagno.h>
 #include <SPI.h>
 
@@ -109,7 +108,7 @@ void dP_AccelMagno::lowpower(bool lowpower)
     pin(POWERDOWN_PIN).write(lowpower);
 }
 
-uint8_t dP_AccelMagno::readregister(uint8_t addr)
+uint8_t dP_AccelMagno::readRegister(uint8_t addr)
 {
 	uint8_t val;
 	SPI.beginTransaction(SPISettings(MY_SPEED_MAX, MY_DATA_ORDER, MY_DATA_MODE));
@@ -121,42 +120,35 @@ uint8_t dP_AccelMagno::readregister(uint8_t addr)
 	return val;
 }
 
-uint8_t dP_AccelMagno::writeregister(uint8_t addr, uint8_t data)
+void dP_AccelMagno::writeRegister(uint8_t addr, uint8_t data)
 {
-	uint8_t val;
 	SPI.beginTransaction(SPISettings(MY_SPEED_MAX, MY_DATA_ORDER, MY_DATA_MODE));
 	spiSelect().write(LOW);
-	val = SPI.transfer(addr & 0x3F);
-	val = SPI.transfer(data);
+	SPI.transfer(addr & 0x3F);
+	SPI.transfer(data);
 	spiSelect().write(HIGH);
 	SPI.endTransaction();
-	return val;
 }
 
-int16_t dP_AccelMagno::read16bit(uint8_t highAddr, uint8_t lowAddr)
+int16_t dP_AccelMagno::read16Bit(uint8_t highAddr, uint8_t lowAddr)
 {
 	int16_t val=0;
 	
-	val = readregister(highAddr);
+	val = readRegister(highAddr);
 	val <<= 8;
-	val |= readregister(lowAddr);
+	val |= readRegister(lowAddr);
 	return val;
 }
-	
-int16_t dP_AccelMagno::read12bit(uint8_t highAddr, uint8_t lowAddr)
-{
-}
-
 
 void dP_AccelMagno::enableAccel(bool en)
 {
 	if (en)
 	{
-		writeregister(CTRL1, 0x67);   // 100Hz, XYZ on
+		writeRegister(CTRL1, 0x67);   // 100Hz, XYZ on
 	}
 	else
 	{
-		writeregister(CTRL1, 0x00);
+		writeRegister(CTRL1, 0x00);
 	}
 }
 
@@ -190,10 +182,10 @@ void dP_AccelMagno::setAccelFullScale(uint8_t mode)
 			accelLsb = ACCEL_2G_LSB;
 			break;
 	}
-	val = readregister(CTRL2);
+	val = readRegister(CTRL2);
 	val &= 0xC7;
 	val |= (accelFullScale << 3);
-	writeregister(CTRL2, val);
+	writeRegister(CTRL2, val);
 }
 
 void dP_AccelMagno::enableMagno(bool en)
@@ -202,16 +194,16 @@ void dP_AccelMagno::enableMagno(bool en)
 	
 	if (en)
 	{
-		val = readregister(CTRL5);
-		writeregister(CTRL5, 0xF0);
-		// writeregister(CTRL5, (val & 0xE3) | 0x10);   // 50Hz
-		val = readregister(CTRL7);
-		writeregister(CTRL7, (val & 0xF8) | 0x00);   // 
+		val = readRegister(CTRL5);
+		writeRegister(CTRL5, 0xF0);
+		// writeRegister(CTRL5, (val & 0xE3) | 0x10);   // 50Hz
+		val = readRegister(CTRL7);
+		writeRegister(CTRL7, (val & 0xF8) | 0x00);   // 
 	}
 	else
 	{
-		val = readregister(CTRL7);
-		writeregister(CTRL7, (val & 0xF8) | 0x07);   // 
+		val = readRegister(CTRL7);
+		writeRegister(CTRL7, (val & 0xF8) | 0x07);   // 
 	}
 }
 
@@ -244,55 +236,52 @@ void dP_AccelMagno::setMagnoFullScale(uint8_t mode)
 	}
 
 	val |= (magnoFullScale << 5);
-	writeregister(CTRL6, val);
+	writeRegister(CTRL6, val);
 }
-
-
-
 
 int16_t dP_AccelMagno::rawAccelX()
 {
-	return read16bit(OUT_X_H_A, OUT_X_L_A);
+	return read16Bit(OUT_X_H_A, OUT_X_L_A);
 }
 
 int16_t dP_AccelMagno::rawAccelY()
 {
-	return read16bit(OUT_Y_H_A, OUT_Y_L_A);
+	return read16Bit(OUT_Y_H_A, OUT_Y_L_A);
 }
 
 int16_t dP_AccelMagno::rawAccelZ()
 {
-	return read16bit(OUT_Z_H_A, OUT_Z_L_A);
+	return read16Bit(OUT_Z_H_A, OUT_Z_L_A);
 }
 
 float dP_AccelMagno::accelX()
 {
-	return read16bit(OUT_X_H_A, OUT_X_L_A) * accelLsb;
+	return read16Bit(OUT_X_H_A, OUT_X_L_A) * accelLsb;
 }
 
 float dP_AccelMagno::accelY()
 {
-	return read16bit(OUT_Y_H_A, OUT_Y_L_A) * accelLsb;
+	return read16Bit(OUT_Y_H_A, OUT_Y_L_A) * accelLsb;
 }
 
 float dP_AccelMagno::accelZ()
 {
-	return read16bit(OUT_Z_H_A, OUT_Z_L_A) * accelLsb;  
+	return read16Bit(OUT_Z_H_A, OUT_Z_L_A) * accelLsb;  
 }
 
 float dP_AccelMagno::magnoX()
 {
-	return read16bit(OUT_X_H_M, OUT_X_L_M) * magnoLsb;
+	return read16Bit(OUT_X_H_M, OUT_X_L_M) * magnoLsb;
 }
 
 float dP_AccelMagno::magnoY()
 {
-	return read16bit(OUT_Y_H_M, OUT_Y_L_M) * magnoLsb;
+	return read16Bit(OUT_Y_H_M, OUT_Y_L_M) * magnoLsb;
 }
 
 float dP_AccelMagno::magnoZ()
 {
-	return read16bit(OUT_Z_H_M, OUT_Z_L_M) * magnoLsb;  
+	return read16Bit(OUT_Z_H_M, OUT_Z_L_M) * magnoLsb;  
 }
 
 bool dP_AccelMagno::intRead(uint8_t intNum)
