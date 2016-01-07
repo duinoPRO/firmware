@@ -29,7 +29,7 @@ void setup() {
   Serial.begin(9600);
 
   // Set the SPI options required by the gyroscope
-  mySpiI2c.setSpiFreq(10000000); // Maximum SPI clock frequency is 10 MHz
+  mySpiI2c.setSpiFreq(6000000); // duinoPRO UNO's maximum SPI clock frequency is 6 MHz (gyroscope's is 10 MHz)
   mySpiI2c.setSpiMode(SPI_MODE3); // SPI mode 3 (CPOL = 1, CPHA = 1)
   mySpiI2c.setSpiOrder(MSBFIRST); // Data is transferred with MSB first
   mySpiI2c.setSpiRWMasks(0x80,0x00); // Read/write bit is MSB, and is high in read mode
