@@ -1,5 +1,5 @@
 /*
-  MicroSD_Example
+  MicroSD-Example
 
   Writes to a file on the inserted microSD card, and then lists
   the contents of the card. The RTC module is used to set the
@@ -13,9 +13,10 @@
 // Include the necessary libraries
 #include <SPI.h>
 #include <dP_MicroSD.h>
-#include <dP_rtc.h> // *Update the library's filename when necessary*
+#include <dP_Rtc.h>
 
-// Define instances of the Micro SD and RTC modules
+// Define instances of the Micro SD and RTC modules, located on
+// board positions 2 and 6 respectively
 dP_MicroSD myMicroSD(2);
 dP_Rtc myRtc(6);
 

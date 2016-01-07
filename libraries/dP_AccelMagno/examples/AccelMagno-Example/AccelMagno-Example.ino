@@ -1,5 +1,5 @@
 /*
-  AccelMagno_Example
+  AccelMagno-Example
 
   Reads the accelerometer and magnetometer outputs from the
   Accel/Magno module.
@@ -13,7 +13,8 @@
 #include <dP_AccelMagno.h>
 #include <SPI.h>
 
-// Define an instance of the Accel/Magno module
+// Define an instance of the Accel/Magno module, located on
+// board position 2
 dP_AccelMagno myAccMag(2);
 
 // Declare the accelerometer and magnetometer output variables
@@ -32,8 +33,8 @@ void setup() {
   myAccMag.setMagnoFullScale(MAGNO_2GAUSS);
 
   // Enable the accelerometer and magnetometer
-  myAccMag.enableAccel(1);
-  myAccMag.enableMagno(1);
+  myAccMag.enableAccel(true);
+  myAccMag.enableMagno(true);
 }
 
 void loop() {

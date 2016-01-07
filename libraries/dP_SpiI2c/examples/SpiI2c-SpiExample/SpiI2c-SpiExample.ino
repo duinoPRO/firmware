@@ -1,5 +1,5 @@
 /*
-  SpiI2c_SpiExample
+  SpiI2c-SpiExample
 
   Communicates with the ST L3GD20 3-axis digital gyroscope using
   the SPI/I2C module's SPI interface to read its outputs.
@@ -13,7 +13,8 @@
 #include <dP_SpiI2c.h>
 #include <SPI.h>
 
-// Define an instance of the SPI/I2C module
+// Define an instance of the SPI/I2C module, located on board
+// position 2
 dP_SpiI2c mySpiI2c(2);
 
 // Declare the gyroscope output variables

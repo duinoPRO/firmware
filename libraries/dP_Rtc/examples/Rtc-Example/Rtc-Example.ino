@@ -1,5 +1,5 @@
 /*
-  RTC_Example
+  Rtc-Example
 
   Sets the RTC's date and time if necessary, then reads its
   date and time, followed by setting an alarm and reading 
@@ -14,7 +14,8 @@
 #include <dP_Rtc.h> 
 #include <SPI.h>
 
-// Define an instance of the RTC module
+// Define an instance of the RTC module, located on board
+// position 2
 dP_Rtc myRtc(2);
 
 void setup() {
@@ -29,14 +30,14 @@ void setup() {
   // appropriately to set the RTC's date and time
   /*
     myRtc.setDate(2015,12,17);
-    myRtc.setTime(14,27,2);
+    myRtc.setTime(14,27,02);
     myRtc.setDayWeek(5);
   */  
 
   // Read the RTC's date and time
-  uint8_t year, month, day, hour, minute, second, dayofweek;
+  uint8_t year, month, day, hour, minute, second, dayOfWeek;
   myRtc.readDate(&year, &month, &day);
-  myRtc.readDayWeek(&dayofweek);
+  myRtc.readDayWeek(&dayOfWeek);
   myRtc.readTime(&hour, &minute, &second);
 
   // Print the RTC's date and time to the serial monitor
@@ -47,7 +48,7 @@ void setup() {
   Serial.print("Day: ");
   Serial.println(day);
   Serial.print("Day of the week: ");
-  Serial.println(dayofweek);
+  Serial.println(dayOfWeek);
   Serial.print("Hour: ");
   Serial.println(hour);
   Serial.print("Minute: ");
@@ -69,7 +70,8 @@ void setup() {
   // Disable the RTC's alarm 2 in case it has previously been
   // enabled, enable alarm 1, and set alarm 1 to activate every
   // day (mode 01000) at 18:30:45. For this alarm mode, the
-  // 3rd (day) argument of alarmSet() is irrelevant.
+  // 3rd (day) argument of alarmSet() is irrelevant and can be
+  // set to any allowable value.
   myRtc.alarmDisable(2);
   myRtc.alarmEnable(1);
   myRtc.alarmSet(1, 0b01000, 1, 18, 30, 45);
