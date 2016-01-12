@@ -165,7 +165,6 @@ void dP_XBee::writeByte(uint8_t data)
 	}
 }
 
-// Receive a packet using SPI or UART communication in API mode
 bool dP_XBee::readPacket()
 {
 	uint8_t data;
@@ -282,7 +281,6 @@ char *dP_XBee::lastPacket()
 	return rxPkt;
 }
 
-// Send a packet using SPI or UART communication in API mode
 void dP_XBee::sendPacket(char *txPkt, uint8_t txLen, const uint8_t *destAddr)
 {
 	uint8_t i;
@@ -330,15 +328,13 @@ void dP_XBee::sendPacket(char *txPkt, uint8_t txLen, const uint8_t *destAddr)
 	writeByte(0xFF - checksum);
 }
 
-// Send a packet using UART communication in transparent mode
-void dP_XBee::sendString(char *txPkt)
+void dP_XBee::sendString(char *txStr)
 {
 	uint8_t i;
 	
-	s->write(txPkt);
+	s->write(txStr);
 }
 
-// UART communication only
 void dP_XBee::waitForOK()
 {
 	while (s->read() != 0x4F) {
@@ -349,7 +345,6 @@ void dP_XBee::waitForOK()
 	}
 }
 
-// UART communication only
 void dP_XBee::ATCommand(char *command, char *param)
 {
 	delay(1000);
@@ -373,7 +368,6 @@ void dP_XBee::ATCommand(char *command, char *param)
 	waitForOK();
 }
 
-// UART communication only
 void dP_XBee::ATReadCommand(char *command, char *readarray, uint8_t readarraylen)
 {
 	uint8_t len = 0;
@@ -401,7 +395,6 @@ void dP_XBee::ATReadCommand(char *command, char *readarray, uint8_t readarraylen
 	readarray[len] = 0;
 }
 
-// UART communication only
 void dP_XBee::apiEnable(bool en)
 {
 	if (en)
