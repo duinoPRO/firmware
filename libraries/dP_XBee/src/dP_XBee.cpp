@@ -372,8 +372,7 @@ void dP_XBee::ATReadCommand(char *command, char *readarray, uint8_t readarraylen
 {
 	uint8_t len = 0;
 	uint8_t data = 0;
-	char temp[1] = {""};
-	*readarray = temp[0];
+	readarray[0] = 0;
 
 	delay(1000);
 	s->write("+++");
