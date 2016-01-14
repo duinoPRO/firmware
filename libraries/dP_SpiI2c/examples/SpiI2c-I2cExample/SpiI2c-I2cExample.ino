@@ -9,8 +9,7 @@
   Date: 17 December 2015
   */
 
-// Include the necessary libraries
-#include <Wire.h>
+// Include the required library
 #include <dP_SpiI2c.h>
 
 // Define an instance of the SPI/I2C module, located on board
@@ -21,8 +20,7 @@ dP_SpiI2c mySpiI2c(2);
 float gyroX, gyroY, gyroZ;
 
 void setup() {
-  // Begin using I2C and the instance of the SPI/I2C module
-  Wire.begin();
+  // Begin using the instance of the SPI/I2C module
   mySpiI2c.begin();
 
   // Initialize serial communication at 9600 bits per second
