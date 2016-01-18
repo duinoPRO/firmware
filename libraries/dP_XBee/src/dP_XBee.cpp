@@ -355,13 +355,12 @@ void dP_XBee::ATCommand(char *command, char *param)
 	ser->write(param);
 	ser->write("\r");	
 	waitForOK();
-	ser->flush();
 	
 	ser->write("ATWR\r");
 	waitForOK();
 	ser->write("ATAC\r");
 	waitForOK();
-	// Uncomment the line below if some commands don't seem to work; this is needed for the XBee S6B unit.
+	// Uncomment the line below if some commands don't seem to work; this is needed for the XBee S6B unit used with the dP_XBeeWiFi library.
 	// delay(10);
 	ser->write("ATCN\r");
 	waitForOK();
@@ -372,6 +371,7 @@ void dP_XBee::ATReadCommand(char *command, char *readarray, uint8_t readarraylen
 	uint8_t len = 0;
 	uint8_t data = 0;
 	readarray[0] = 0;
+	String str;
 
 	delay(1000);
 	ser->write("+++");
@@ -381,16 +381,11 @@ void dP_XBee::ATReadCommand(char *command, char *readarray, uint8_t readarraylen
 	ser->write("AT");
 	ser->write(command);
 	ser->write("\r");
-	while (data != '\r' && len < readarraylen - 1) {
-		while (ser->available() == 0) {
-		}
-		data = ser->read();
-		if (data != '\r') {
-			readarray[len] = (char)data;
-			len++;
-		}
-	}
-	readarray[len] = 0;
+	str = ser->readStringUntil('\r');
+	str.toCharArray(readarray, readarraylen);
+	
+	ser->write("ATCN\r");
+	waitForOK();
 }
 
 void dP_XBee::apiEnable(bool en)

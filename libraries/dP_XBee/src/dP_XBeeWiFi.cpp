@@ -77,6 +77,7 @@ void dP_XBeeWiFi::ATReadCommand(char *command, char *readarray, uint8_t readarra
 	uint8_t len = 0;
 	uint8_t data = 0;
 	readarray[0] = 0;
+	String str;
 
 	delay(1000);
 	ser->write("+++");
@@ -86,16 +87,11 @@ void dP_XBeeWiFi::ATReadCommand(char *command, char *readarray, uint8_t readarra
 	ser->write("AT");
 	ser->write(command);
 	ser->write("\r");
-	while (data != '\r' && len < readarraylen - 1) {
-		while (ser->available() == 0) {
-		}
-		data = ser->read();
-		if (data != '\r') {
-			readarray[len] = (char)data;
-			len++;
-		}
-	}
-	readarray[len] = 0;
+	str = ser->readStringUntil('\r');
+	str.toCharArray(readarray, readarraylen);
+	
+	ser->write("ATCN\r");
+	waitForOK();
 }
 
 void dP_XBeeWiFi::cloudDataEnable(bool en)
@@ -136,7 +132,8 @@ void dP_XBeeWiFi::accessPointConnect(char *SSID, uint8_t security, char *passwor
 	delay(1000);
 	waitForOK();
 	
-	ser->write("ATDO\r"); // Enables Device Cloud if it is disabled.
+	// Enable Device Cloud if it is disabled.
+	ser->write("ATDO\r"); 
 	while (ser->available() == 0) {
 	}
 	if (ser->read() == '0') {
