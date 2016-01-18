@@ -16,9 +16,9 @@
 #include <SPI.h>
 
 // Define an instance of the XBee module, located on
-// board position 6/7 (the higher number is used as
+// board position 1/2 (the higher number is used as
 // the argument)
-dP_XBee myXBee(7);
+dP_XBee myXBee(2);
 
 // This 64-bit address is used to broadcast transmissions to
 // all devices. To transmit to a specific device, use that
@@ -34,9 +34,8 @@ void setup() {
 
 void loop() {
   // Transmit a packet consisting of the text "Test" to all devices
-  // using SPI communication in API mode. The second argument
-  // specifies the length of the packet.
-  myXBee.sendPacket("Test",4,addr);
+  // using SPI communication in API mode.
+  myXBee.sendPacket("Test",addr);
 
   // Wait for a second before sending the packet again.
   delay(1000);

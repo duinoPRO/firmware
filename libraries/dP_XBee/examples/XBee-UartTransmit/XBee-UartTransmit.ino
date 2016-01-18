@@ -45,10 +45,9 @@ void setup() {
 
   // Send a packet consisting of the text "Test2" to all
   // devices over the serial port in API mode, once per second
-  // for 20 seconds. The second argument specifies the length of
-  // the packet.
+  // for 20 seconds.
   for (int i = 1; i <= 20; i++) {
-    myXBee.sendPacket("Test2",5,addr);
+    myXBee.sendPacket("Test2",addr);
     delay(1000);
   }
 
