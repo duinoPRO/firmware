@@ -366,11 +366,11 @@ void dP_XBee::ATCommand(char *command, char *param)
 	waitForOK();
 }
 
-void dP_XBee::ATReadCommand(char *command, char *readarray, uint8_t readarraylen)
+void dP_XBee::ATReadCommand(char *command, char *readArray, uint8_t readArrayLen)
 {
 	uint8_t len = 0;
 	uint8_t data = 0;
-	readarray[0] = 0;
+	readArray[0] = 0;
 	String str;
 
 	delay(1000);
@@ -382,7 +382,7 @@ void dP_XBee::ATReadCommand(char *command, char *readarray, uint8_t readarraylen
 	ser->write(command);
 	ser->write("\r");
 	str = ser->readStringUntil('\r');
-	str.toCharArray(readarray, readarraylen);
+	str.toCharArray(readArray, readArrayLen);
 	
 	ser->write("ATCN\r");
 	waitForOK();

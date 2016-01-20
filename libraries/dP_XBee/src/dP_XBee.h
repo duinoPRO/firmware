@@ -122,10 +122,10 @@ class dP_XBee : public Module {
 		/** \brief Read the XBee unit's stored parameter corresponding to the given AT command.
 		 *  UART communication is required.
 		 *  \param command - The AT command.
-		 *  \param readarray - The XBee unit's stored parameter.
-		 *  \param readarraylen - The length of the readarray string buffer.
+		 *  \param readArray - The XBee unit's stored parameter.
+		 *  \param readArrayLen - The length of the readarray string buffer.
 		 */
-		void ATReadCommand(char *command, char *readarray, uint8_t readarraylen);
+		void ATReadCommand(char *command, char *readArray, uint8_t readArrayLen);
 
 		/** \brief Enable or disable API mode, and respectively disable or enable transparent mode.
 		 *  Applies only to (and requires) UART communication; SPI communication uses API mode only.
