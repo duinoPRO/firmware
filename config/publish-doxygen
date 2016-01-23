@@ -11,11 +11,6 @@ COMMIT_EMAIL="kristen.clifton@duinopro.cc"
 CHANGESET=$(git rev-parse --verify HEAD)
 KEY_FILE=$(pwd)/config/travisci_rsa
 
-echo host github.com > ~/.ssh/config
-echo "  IdentityFile $KEY_FILE" >> ~/.ssh/config
-
-cat ~/.ssh/config
-
 rm -rf ${HTML_PATH}
 mkdir -p ${HTML_PATH}
 git clone -b master "${REPO_PATH}" --single-branch ${HTML_PATH}
@@ -25,6 +20,8 @@ git rm -rf .
 cd -
 
 doxygen config/Doxyfile
+
+cp config/doxy-boot.js doc/html
 
 cd ${HTML_PATH}
 git add .
