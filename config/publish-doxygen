@@ -4,7 +4,7 @@ set -e
 set -u
 set -v
 
-REPO_PATH=git@github.com:duinopro/duinopro.github.io.git
+REPO_PATH=git@github.com:duinoPRO/duinopro.github.io.git
 HTML_PATH=doc/html
 COMMIT_USER="kmclifton"
 COMMIT_EMAIL="kristen.clifton@duinopro.cc"
