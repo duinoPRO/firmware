@@ -1,6 +1,22 @@
+/*
+ * dP_XBee.cpp is part of the duinoPRO firmware.
+ *
+ * duinoPRO is an Arduino™-compatible platform in a flat form factor with surface-mount,
+ * solderable modules. It is designed with commercialization of real products in mind.
+ * Note that we have designed duinoPRO to be compatible with the Arduino™ IDE.  This does
+ * not imply that duinoPRO is certified, tested or endorsed by Arduino™ in any way.
+ *
+ * For more information, contact info@duinopro.cc or visit www.duinopro.cc.
+ *
+ * This file is licensed under the BSD 3-Clause license
+ * (see https://github.com/duinoPRO/firmware/blob/master/duinoPRO_BSD_fwlicense.txt).
+ *
+ * Using duinoPRO core and libraries licensed under BSD for the firmware of a commercial
+ * product does not require you to release the source code for the firmware.
+ *
+*/
 
 #include <dP_XBee.h>
-#include <SPI.h>
 #include <duinoPRO.h>
 
 // #define XBEE_DEBUG 1
@@ -32,7 +48,7 @@
 #define RECEIVE_SOURCE_ADDR_64	 (4)
 #define RECEIVE_SOURCE_ADDR_16	 (12)
 #define RECEIVE_OPTIONS	 		 (14)
-#define RECEIVE_DATA	 		 (15)	
+#define RECEIVE_DATA	 		 (15)
 
 #define RX_FRAME_OVERHEADS (RECEIVE_DATA - FRAME_TYPE)
 
@@ -42,14 +58,14 @@
 #define TRANSMIT_DEST_ADDR_64	 	(5)
 #define TRANSMIT_DEST_ADDR_16	 	(13)
 #define TRANSMIT_BROADCAST_RADIUS	(15)
-#define TRANSMIT_OPTIONS 		 	(16)	
+#define TRANSMIT_OPTIONS 		 	(16)
 #define TRANSMIT_DATA		 		(17)
 
 #define TX_FRAME_OVERHEADS (TRANSMIT_DATA - FRAME_TYPE)
 
-dP_XBee::dP_XBee(int id) : Module(id), modSpi(id-1)
+dP_XBee::dP_XBee(int id, int id2) : dP_Module(id, id2)
 {
-	comm = UART_COMM;
+	comm = SERIAL_COMM;
 };
 
 void dP_XBee::begin()
@@ -58,37 +74,41 @@ void dP_XBee::begin()
     pin(SLEEP_PIN).write(LOW);
 }
 
-void dP_XBee::beginUart(unsigned long baud)
+void dP_XBee::beginSerial(unsigned long baud)
 {
 	begin();
 	duinoPRO base;
-	base.uartModule7Mode(); // Will need to be updated to account for boards with multiple serial ports.
-    ser = &serial();
-    ser->begin(baud);
+	base.serialModuleMode(); // Will need to be updated to account for boards with multiple serial ports.
+  //ser = &serial();
+  //ser->begin(baud);
+	serial().begin(baud);
 }
 
 void dP_XBee::beginSpi()
 {
 	begin();
 	comm = SPI_COMM;
-	modSpi.spiSelect().mode(OUTPUT);
-    modSpi.spiSelect().write(HIGH);
-	modSpi.pin(SPI_ATTNZ_PIN).mode(INPUT);
-	
+	//modSpi.spiSelect().mode(OUTPUT);
+  //modSpi.spiSelect().write(HIGH);
+	//modSpi.pin(SPI_ATTNZ_PIN).mode(INPUT);
+	spiSelect().mode(OUTPUT);
+	spiSelect().write(HIGH);
+	pin(SPI_ATTNZ_PIN).mode(INPUT);
+
 	rxPkt[0] = '\0';
 	rxPktLen = 0;
 }
 
-HardwareSerial& dP_XBee::serial()
+/*HardwareSerial& dP_XBee::serial()
 {
     // In a Due version of this, different serial ports would be returned, based on id.
     return Serial;
-}
+}*/
 
-Pin& dP_XBee::spiSelectXBee()
+/*Pin& dP_XBee::spiSelectXBee()
 {
     return modSpi.spiSelect();
-};
+};*/
 
 void dP_XBee::lowpower(bool lowpower)
 {
@@ -98,67 +118,83 @@ void dP_XBee::lowpower(bool lowpower)
 void dP_XBee::setupSpi()
 {
 	delay(1000);
-	ser->write("+++");
+	//ser->write("+++");
+	serial().write("+++");
 	delay(1000);
 	waitForOK();
-	
-	ser->write("ATD11\r");
+
+	//ser->write("ATD11\r");
+	serial().write("ATD11\r");
 	waitForOK();
-	ser->write("ATD21\r");
+	//ser->write("ATD21\r");
+	serial().write("ATD21\r");
 	waitForOK();
-	ser->write("ATD31\r");
+	//ser->write("ATD31\r");
+	serial().write("ATD31\r");
 	waitForOK();
-	ser->write("ATD41\r");
+	//ser->write("ATD41\r");
+	serial().write("ATD41\r");
 	waitForOK();
-	ser->write("ATP21\r");
+	//ser->write("ATP21\r");
+	serial().write("ATP21\r");
 	waitForOK();
-	
-	ser->write("ATWR\r");
+
+	//ser->write("ATWR\r");
+	serial().write("ATWR\r");
 	waitForOK();
-	ser->write("ATAC\r");
+	//ser->write("ATAC\r");
+	serial().write("ATAC\r");
 	waitForOK();
-	ser->write("ATCN\r");
+	//ser->write("ATCN\r");
+	serial().write("ATCN\r");
 	waitForOK();
 }
 
 uint8_t dP_XBee::readByte()
 {
 	uint8_t val;
-	
-	if (comm == UART_COMM)
+
+	if (comm == SERIAL_COMM)
 	{
-		val = ser->read();
+		//val = ser->read();
+		val = serial().read();
 	}
 	else
 	{
-		SPI.beginTransaction(SPISettings(MY_SPEED_MAX, MY_DATA_ORDER, MY_DATA_MODE));
-		modSpi.spiSelect().write(LOW);
-		val = SPI.transfer(0xFF);
-		modSpi.spiSelect().write(HIGH);
-		SPI.endTransaction();
+		spi().beginTransaction(MY_SPEED_MAX, MY_DATA_ORDER, MY_DATA_MODE);
+		//modSpi.spiSelect().write(LOW);
+		spiSelect().write(LOW);
+		val = spi().transfer(0xFF);
+		//modSpi.spiSelect().write(HIGH);
+		spiSelect().write(HIGH);
+		spi().endTransaction();
 	}
-	
+
 	return val;
 }
-	
+
 uint16_t dP_XBee::serialAvailable()
 {
-	return ser->available();
+	//return ser->available();
+	return serial().available();
 }
 
 void dP_XBee::writeByte(uint8_t data)
 {
-	if (comm == UART_COMM)
+	if (comm == SERIAL_COMM)
 	{
-		ser->write(data);
+		//ser->write(data);
+		serial().write(data);
 	}
 	else
 	{
-		SPI.beginTransaction(SPISettings(MY_SPEED_MAX, MY_DATA_ORDER, MY_DATA_MODE));
-		modSpi.spiSelect().write(LOW);
-		SPI.transfer(data);
-		modSpi.spiSelect().write(HIGH);
-		SPI.endTransaction();
+		spi().beginTransaction(MY_SPEED_MAX, MY_DATA_ORDER, MY_DATA_MODE);
+		//modSpi.spiSelect().write(LOW);
+		spiSelect().write(LOW);
+		spi().transfer(data);
+		//modSpi.spiSelect().write(HIGH);
+		spiSelect().write(HIGH);
+		spi().endTransaction();
 	}
 }
 
@@ -170,23 +206,25 @@ bool dP_XBee::readPacket()
 	uint16_t dataLen;
 	uint8_t checksum = 0;
 	bool pktAvailable;
-	
+
 	rxPkt[0] = '\0';
 	rxPktLen = 0;
-	
+
 	#ifdef XBEE_DEBUG
 	// Serial.println("dP_XBee::readPacket()");
 	#endif
-	
-	if (comm == UART_COMM)
+
+	if (comm == SERIAL_COMM)
 	{
-		pktAvailable = ser->available();
+		//pktAvailable = ser->available();
+		pktAvailable = serial().available();
 	}
 	else
 	{
-		pktAvailable = !modSpi.pin(SPI_ATTNZ_PIN).read();
+		//pktAvailable = !modSpi.pin(SPI_ATTNZ_PIN).read();
+		pktAvailable = !pin(SPI_ATTNZ_PIN).read();
 	}
-	
+
 	while (pktAvailable)
 	{
 		data = readByte();
@@ -240,7 +278,7 @@ bool dP_XBee::readPacket()
 			#ifdef XBEE_DEBUG
 			Serial.print("byteCount: ");
 			Serial.println(byteCount);
-			#endif		
+			#endif
 			if (rxPktLen == dataLen)
 			{
 				rxPkt[rxPktLen] = '\0';
@@ -267,7 +305,7 @@ bool dP_XBee::readPacket()
 				rxPktLen++;
 			}
 		}
-		
+
 		byteCount++;
 	}
 	return false;
@@ -283,9 +321,9 @@ void dP_XBee::sendPacket(char *txPkt, const uint8_t *destAddr)
 	uint8_t i;
 	uint8_t checksum;
 	uint8_t txLen = strlen(txPkt);
-	
+
 	checksum = 0;
-		
+
 	writeByte(FRAME_DELIMITER);
 	// LENGTH_MSB
 	writeByte(0x00);
@@ -297,7 +335,7 @@ void dP_XBee::sendPacket(char *txPkt, const uint8_t *destAddr)
 	checksum += FRAME_TYPE_TX;
 	// TRANSMIT_FRAME_ID
 	writeByte(0x00);		// No response requested
-	
+
 	// TRANSMIT_DEST_ADDR_64
 	for (i=0; i<LONG_ADDR_LEN; i++)
 	{
@@ -308,13 +346,13 @@ void dP_XBee::sendPacket(char *txPkt, const uint8_t *destAddr)
 	// 0xFFFE - unknown or broadcast address
 	writeByte(0xFF);
 	checksum +=0xFF;
-	writeByte(0xFE);	
+	writeByte(0xFE);
 	checksum += 0xFE;
-	
+
 	// TRANSMIT_BROADCAST_RADIUS
 	writeByte(0x00);		// maximum hops
 	// TRANSMIT_OPTIONS
-	writeByte(0x00);		// no options	
+	writeByte(0x00);		// no options
 	// TRANSMIT_DATA
 
 	for (i=0; i<txLen; i++)
@@ -329,40 +367,52 @@ void dP_XBee::sendPacket(char *txPkt, const uint8_t *destAddr)
 void dP_XBee::sendString(char *txStr)
 {
 	uint8_t i;
-	
-	ser->write(txStr);
+
+//	ser->write(txStr);
+	serial().write(txStr);
 }
 
 void dP_XBee::waitForOK()
 {
-	while (ser->read() != 'O') {
+//	while (ser->read() != 'O') {
+	while(serial().read() != 'O') {
 	}
-	while (ser->read() != 'K') {
+//	while (ser->read() != 'K') {
+	while(serial().read() != 'K') {
 	}
-	while (ser->read() != '\r') {
+//	while (ser->read() != '\r') {
+	while(serial().read() != '\r') {
 	}
 }
 
 void dP_XBee::ATCommand(char *command, char *param)
 {
 	delay(1000);
-	ser->write("+++");
+//	ser->write("+++");
+	serial().write("+++");
 	delay(1000);
 	waitForOK();
-	
-	ser->write("AT");
-	ser->write(command);
-	ser->write(param);
-	ser->write("\r");	
+
+//	ser->write("AT");
+//	ser->write(command);
+//	ser->write(param);
+//	ser->write("\r");
+	serial().write("AT");
+	serial().write(command);
+	serial().write(param);
+	serial().write("\r");
 	waitForOK();
-	
-	ser->write("ATWR\r");
+
+	//ser->write("ATWR\r");
+	serial().write("ATWR\r");
 	waitForOK();
-	ser->write("ATAC\r");
+	serial().write("ATAC\r");
+	//ser->write("ATAC\r");
 	waitForOK();
 	// Uncomment the line below if some commands don't seem to work; this is needed for the XBee S6B unit used with the dP_XBeeWiFi library.
 	// delay(10);
-	ser->write("ATCN\r");
+	//ser->write("ATCN\r");
+	serial().write("ATCN\r");
 	waitForOK();
 }
 
@@ -374,17 +424,23 @@ void dP_XBee::ATReadCommand(char *command, char *readArray, uint8_t readArrayLen
 	String str;
 
 	delay(1000);
-	ser->write("+++");
+	//ser->write("+++");
+	serial().write("+++");
 	delay(1000);
 	waitForOK();
-	
-	ser->write("AT");
-	ser->write(command);
-	ser->write("\r");
-	str = ser->readStringUntil('\r');
+
+	//ser->write("AT");
+	//ser->write(command);
+	//ser->write("\r");
+	serial().write("AT");
+	serial().write(command);
+	serial().write("\r");
+	//str = ser->readStringUntil('\r');
+	str = serial().readStringUntil('\r');
 	str.toCharArray(readArray, readArrayLen);
-	
-	ser->write("ATCN\r");
+
+	//ser->write("ATCN\r");
+	serial().write("ATCN\r");
 	waitForOK();
 }
 

@@ -1,26 +1,43 @@
 /*
+ * Rtc-Example.ino is part of the duinoPRO firmware. 
+ *
+ * duinoPRO is an Arduino™-compatible platform in a flat form factor with surface-mount,
+ * solderable modules. It is designed with commercialization of real products in mind.
+ * Note that we have designed duinoPRO to be compatible with the Arduino™ IDE.  This does
+ * not imply that duinoPRO is certified, tested or endorsed by Arduino™ in any way.
+ *
+ * For more information, contact info@duinopro.cc or visit www.duinopro.cc.
+ *
+ * This file is licensed under the BSD 3-Clause license
+ * (see https://github.com/duinoPRO/firmware/blob/master/duinoPRO_BSD_fwlicense.txt).
+ *
+ * Using duinoPRO core and libraries licensed under BSD for the firmware of a commercial
+ * product does not require you to release the source code for the firmware.
+ *
+*/
+
+/*
   Rtc-Example
 
   Sets the RTC's date and time if necessary, then reads its
-  date and time, followed by setting an alarm and reading 
+  date and time, followed by setting an alarm and reading
   the alarm interrupt status
 
   Module Used: RTC
-  Author: SF
-  Date: 17 December 2015
+  Author: SF, KC
+  Date: 08 September 2016
   */
 
 // Include the necessary libraries
-#include <dP_Rtc.h> 
-#include <SPI.h>
+#include <dP_Rtc.h>
+
 
 // Define an instance of the RTC module, located on board
-// position 2
-dP_Rtc myRtc(2);
+// position 5
+dP_Rtc myRtc(5);
 
 void setup() {
-  // Begin using SPI and the instance of the RTC module
-  SPI.begin();
+  // Begin using the instance of the RTC module
   myRtc.begin();
 
   // Initialize serial communication at 9600 bits per second
@@ -28,11 +45,11 @@ void setup() {
 
   // Uncomment the code block below and change the arguments
   // appropriately to set the RTC's date and time
-  /*
-    myRtc.setDate(2015,12,17);
-    myRtc.setTime(14,27,02);
-    myRtc.setDayWeek(5);
-  */  
+
+//   myRtc.setDate(2016,9,8);
+//   myRtc.setTime(10,25,0);
+//   myRtc.setDayWeek(4);
+
 
   // Read the RTC's date and time
   uint8_t year, month, day, hour, minute, second, dayOfWeek;

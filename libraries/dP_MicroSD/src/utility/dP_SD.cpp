@@ -17,11 +17,11 @@
      `SD` object which can be interacted with in a similar
      manner to other standard global objects like `Serial` and `Ethernet`.
 
-   * Boilerplate initialisation code is contained in one method named 
+   * Boilerplate initialisation code is contained in one method named
      `begin` and no further objects need to be created in order to access
      the SD card.
 
-   * Calls to `open` can supply a full path name including parent 
+   * Calls to `open` can supply a full path name including parent
      directories which simplifies interacting with files in subdirectories.
 
    * Utility methods are provided to determine whether a file exists
@@ -32,13 +32,13 @@
   sdfatlib library is exposed.
 
  */
- 
+
 
 /*
 
   Implementation Notes
 
-  In order to handle multi-directory path traversal, functionality that 
+  In order to handle multi-directory path traversal, functionality that
   requires this ability is implemented as callback functions.
 
   Individual methods call the `walkPath` function which performs the actual
@@ -51,7 +51,7 @@
 
  */
 
-#include <Pin.h>
+#include <dP_Pin.h>
 #include "dP_SD.h"
 
 
@@ -95,7 +95,7 @@ bool getNextPathComponent(char *path, unsigned int *p_offset,
   if (path[offset] == '/') {
     offset++;
   }
-  
+
   // Copy the next next path segment
   while (bufferOffset < MAX_COMPONENT_LEN
 	 && (path[offset] != '/')
@@ -125,7 +125,7 @@ boolean walkPath(char *filepath, SdFile& parentDir,
 				     void *object),
 		 void *object = NULL) {
   /*
-     
+
      When given a file path (and parent directory--normally root),
      this function traverses the directories in the path and at each
      level calls the supplied callback function while also providing
@@ -156,17 +156,17 @@ boolean walkPath(char *filepath, SdFile& parentDir,
   SdFile subfile1;
   SdFile subfile2;
 
-  char buffer[PATH_COMPONENT_BUFFER_LEN]; 
+  char buffer[PATH_COMPONENT_BUFFER_LEN];
 
   unsigned int offset = 0;
 
   SdFile *p_parent;
   SdFile *p_child;
 
-  SdFile *p_tmp_sdfile;  
-  
+  SdFile *p_tmp_sdfile;
+
   p_child = &subfile1;
-  
+
   p_parent = &parentDir;
 
   while (true) {
@@ -184,11 +184,11 @@ boolean walkPath(char *filepath, SdFile& parentDir,
       }
       return false;
     }
-    
+
     if (!moreComponents) {
       break;
     }
-    
+
     boolean exists = (*p_child).open(*p_parent, buffer, O_RDONLY);
 
     // If it's one we've created then we
@@ -196,7 +196,7 @@ boolean walkPath(char *filepath, SdFile& parentDir,
     if (p_parent != &parentDir) {
       (*p_parent).close();
     }
-    
+
     // Handle case when it doesn't exist and we can't continue...
     if (exists) {
       // We alternate between two file handles as we go down
@@ -212,7 +212,7 @@ boolean walkPath(char *filepath, SdFile& parentDir,
       return false;
     }
   }
-  
+
   if (p_parent != &parentDir) {
     (*p_parent).close(); // TODO: Return/ handle different?
   }
@@ -233,7 +233,7 @@ boolean walkPath(char *filepath, SdFile& parentDir,
 
  */
 
-boolean callback_pathExists(SdFile& parentDir, char *filePathComponent, 
+boolean callback_pathExists(SdFile& parentDir, char *filePathComponent,
 			    boolean isLastComponent, void *object) {
   /*
 
@@ -246,17 +246,17 @@ boolean callback_pathExists(SdFile& parentDir, char *filePathComponent,
   SdFile child;
 
   boolean exists = child.open(parentDir, filePathComponent, O_RDONLY);
-  
+
   if (exists) {
-     child.close(); 
+     child.close();
   }
-  
+
   return exists;
 }
 
 
 
-boolean callback_makeDirPath(SdFile& parentDir, char *filePathComponent, 
+boolean callback_makeDirPath(SdFile& parentDir, char *filePathComponent,
 			     boolean isLastComponent, void *object) {
   /*
 
@@ -268,19 +268,19 @@ boolean callback_makeDirPath(SdFile& parentDir, char *filePathComponent,
   */
   boolean result = false;
   SdFile child;
-  
+
   result = callback_pathExists(parentDir, filePathComponent, isLastComponent, object);
   if (!result) {
     result = child.makeDir(parentDir, filePathComponent);
-  } 
-  
+  }
+
   return result;
 }
 
 
   /*
 
-boolean callback_openPath(SdFile& parentDir, char *filePathComponent, 
+boolean callback_openPath(SdFile& parentDir, char *filePathComponent,
 			  boolean isLastComponent, void *object) {
 
     Callback used to open a file specified by a filepath that may
@@ -311,7 +311,7 @@ boolean callback_openPath(SdFile& parentDir, char *filePathComponent,
 
 
 
-boolean callback_remove(SdFile& parentDir, char *filePathComponent, 
+boolean callback_remove(SdFile& parentDir, char *filePathComponent,
 			boolean isLastComponent, void *object) {
   if (isLastComponent) {
     return SdFile::remove(parentDir, filePathComponent);
@@ -319,7 +319,7 @@ boolean callback_remove(SdFile& parentDir, char *filePathComponent,
   return true;
 }
 
-boolean callback_rmdir(SdFile& parentDir, char *filePathComponent, 
+boolean callback_rmdir(SdFile& parentDir, char *filePathComponent,
 			boolean isLastComponent, void *object) {
   if (isLastComponent) {
     SdFile f;
@@ -335,7 +335,7 @@ boolean callback_rmdir(SdFile& parentDir, char *filePathComponent,
 
 
 
-boolean SDClass::begin(Pin *csPin) {
+boolean SDClass::begin(dP_Pin *csPin) {
   /*
 
     Performs the initialisation required by the sdfatlib library.
@@ -361,7 +361,7 @@ SdFile SDClass::getParentDir(const char *filepath, int *index) {
   // we'll use the pointers to swap between the two objects
   SdFile *parent = &d1;
   SdFile *subdir = &d2;
-  
+
   const char *origpath = filepath;
 
   while (strchr(filepath, '/')) {
@@ -371,7 +371,7 @@ SdFile SDClass::getParentDir(const char *filepath, int *index) {
       filepath++;
       continue;
     }
-    
+
     if (! strchr(filepath, '/')) {
       // it was in the root directory, so leave now
       break;
@@ -468,7 +468,7 @@ File SDClass::open(const char *filepath, uint8_t mode) {
     parentdir.close();
   }
 
-  if (mode & (O_APPEND | O_WRITE)) 
+  if (mode & (O_APPEND | O_WRITE))
     file.seekSet(file.fileSize());
   return File(file, filepath);
 }
@@ -543,22 +543,22 @@ boolean SDClass::exists(char *filepath) {
 
 boolean SDClass::mkdir(char *filepath) {
   /*
-  
+
     Makes a single directory or a heirarchy of directories.
 
     A rough equivalent to `mkdir -p`.
-  
+
    */
   return walkPath(filepath, root, callback_makeDirPath);
 }
 
 boolean SDClass::rmdir(char *filepath) {
   /*
-  
+
     Remove a single directory or a heirarchy of directories.
 
     A rough equivalent to `rm -rf`.
-  
+
    */
   return walkPath(filepath, root, callback_rmdir);
 }
@@ -602,7 +602,7 @@ File File::openNextFile(uint8_t mode) {
 
     if (f.open(_file, name, mode)) {
       //Serial.println("OK!");
-      return File(f, name);    
+      return File(f, name);
     } else {
       //Serial.println("ugh");
       return File();
@@ -613,7 +613,7 @@ File File::openNextFile(uint8_t mode) {
   return File();
 }
 
-void File::rewindDirectory(void) {  
+void File::rewindDirectory(void) {
   if (isDirectory())
     _file->rewind();
 }

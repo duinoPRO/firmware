@@ -1,7 +1,25 @@
+/*
+ * dP_XBeeWiFi.h is part of the duinoPRO firmware. 
+ *
+ * duinoPRO is an Arduino™-compatible platform in a flat form factor with surface-mount,
+ * solderable modules. It is designed with commercialization of real products in mind.
+ * Note that we have designed duinoPRO to be compatible with the Arduino™ IDE.  This does
+ * not imply that duinoPRO is certified, tested or endorsed by Arduino™ in any way.
+ *
+ * For more information, contact info@duinopro.cc or visit www.duinopro.cc.
+ *
+ * This file is licensed under the BSD 3-Clause license
+ * (see https://github.com/duinoPRO/firmware/blob/master/duinoPRO_BSD_fwlicense.txt).
+ *
+ * Using duinoPRO core and libraries licensed under BSD for the firmware of a commercial
+ * product does not require you to release the source code for the firmware.
+ *
+*/
+
 #ifndef DP_XBEEWIFI_H
 #define DP_XBEEWIFI_H
 
-#include <Module.h>
+#include <dP_Module.h>
 
 /** \file
  */
@@ -14,22 +32,22 @@ enum SecurityEnum {
 	WPA2,	/**< WPA2 security */
 	WEP,	/**< WEP security */
 };
- 
+
 /** \brief Class for controlling an XBee S6B Wi-Fi RF unit connected to a duinoPRO XBee module.
- *  
- */  
-class dP_XBeeWiFi : public Module {
+ *
+ */
+class dP_XBeeWiFi : public dP_Module {
 	private:
 	HardwareSerial *ser;
-	
+
 	protected:
-	
+
 	public:
 		/** \brief Constructor for dP_XBeeWiFi
 		 *  \param id - the location of the dP_XBeeWiFi module on the duinoPRO baseboard.
 		 */
-		dP_XBeeWiFi(int id);
-		
+		dP_XBeeWiFi(int id, int id2);
+
 		/** \brief Begin using the dP_XBeeWiFi module with UART communication.
 		 *	The serial port is set to module 7 mode, so communication over the USB port is not possible until this mode is changed.
 		 *  \param baud - The data rate in bits per second (baud).
@@ -43,15 +61,15 @@ class dP_XBeeWiFi : public Module {
 		 *  \return The serial port.
 		 */
 		HardwareSerial& serial(void);
-		
+
 		/** \brief Send a value over the serial port. The XBee unit must be in transparent mode.
 		 *  \param val - The value to be sent.
 		 */
 		void sendVal(uint8_t val);
-		
+
 		/** \brief Wait for an "OK" message from the XBee unit.
 		 */
-		void waitForOK(void);		
+		void waitForOK(void);
 		/** \brief Send an AT command (with parameter) to the XBee unit.
 		 *  \param command - The command to be sent.
 		 *  \param param - The command parameter to be sent.
@@ -63,7 +81,7 @@ class dP_XBeeWiFi : public Module {
 		 *  \param readArrayLen - The length of the readArray string buffer.
 		 */
 		void ATReadCommand(char *command, char *readArray, uint8_t readArrayLen);
-		
+
 		/** \brief Enable or disable sending binary data to the Digi Device Cloud.
 		 *  \param en - true to enable sending binary data, false to disable.
 		 */
@@ -72,7 +90,7 @@ class dP_XBeeWiFi : public Module {
 		 *  \return - The Device Cloud Indicator value.
 		 */
 		uint8_t readCloudIndicator(void);
-		
+
 		/** \brief Connect to the access point with specified SSID, security type and password.
 		 *	Possible security types are listed in #SecurityEnum.
 		 *  If the given timeout period elapses before a connection is made, the connection attempt
@@ -86,19 +104,19 @@ class dP_XBeeWiFi : public Module {
 		/** \brief Disconnect from the connected access point.
 		*/
 		void accessPointDisconnect(void);
-		
+
 		/** \brief Set the XBee unit's power level.
 		 *	This is unrelated to the dP_XBeeWiFi module's low-power mode.
 		 *	\param plevel - The power level to be set, from 0 (lowest) to 4 (highest).
 		 */
 		void powerLevel(uint8_t plevel);
-		
+
 		/** \brief Ping an IP address.
 		 *	\param IP - The IP address to be pinged.
 		 *  \param readArray - The response time, or an error message in the case of no reply (requires a string buffer of at least 9 characters).
 		 */
 		void pingIP(char *IP, char *readArray);
-		
+
 		/** \brief Enable or disable API mode, and respectively disable or enable transparent mode.
 		 *  \param en - true to enable API mode, false to disable.
 		 */
@@ -110,7 +128,7 @@ class dP_XBeeWiFi : public Module {
 		 *  \param apppend - true to append to an existing file, false to overwrite.
 		 */
 		void apiFileWrite(char *filename, char *data, bool append);
-	
+
 };
 
 #endif /* DP_XBEEWIFI_H */

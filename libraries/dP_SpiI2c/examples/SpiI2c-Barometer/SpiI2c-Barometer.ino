@@ -1,4 +1,22 @@
 /*
+ * SpiI2c-Barometer.ino is part of the duinoPRO firmware.
+ *
+ * duinoPRO is an Arduino™-compatible platform in a flat form factor with surface-mount,
+ * solderable modules. It is designed with commercialization of real products in mind.
+ * Note that we have designed duinoPRO to be compatible with the Arduino™ IDE.  This does
+ * not imply that duinoPRO is certified, tested or endorsed by Arduino™ in any way.
+ *
+ * For more information, contact info@duinopro.cc or visit www.duinopro.cc.
+ *
+ * This file is licensed under the BSD 3-Clause license
+ * (see https://github.com/duinoPRO/firmware/blob/master/duinoPRO_BSD_fwlicense.txt).
+ *
+ * Using duinoPRO core and libraries licensed under BSD for the firmware of a commercial
+ * product does not require you to release the source code for the firmware.
+ *
+*/
+
+/*
   SpiI2c-Barometer
 
   Communicates with the Freescale Semiconductor MPL115A1 Miniature
@@ -6,18 +24,18 @@
   interface to read its outputs.
 
   Module Used: SPI/I2C
-  Author: SF
+  Author: SF, KC
   Date: 15 December 2015
   */
 
 #include <dP_SpiI2c.h>
-#include <SPI.h>
 #include <math.h>
 
-dP_SpiI2c mySpiI2c(2);
+
+dP_SpiI2c mySpiI2c(4);
+
 
 void setup() {
-  SPI.begin();
   mySpiI2c.begin();
   mySpiI2c.setSpiFreq(6000000); // 6 MHz SPI clock (the duinoPRO UNO's maximum speed; the barometer's maximum speed is higher). The default SPI_MODE0 is used.
   mySpiI2c.setSpiRWMasks(0x80,0x00); // Read/write bit is high in read mode.
@@ -41,7 +59,7 @@ void loop() {
   float b1 = b1i/pow(2,13);
   float b2 = b2i/pow(2,14);
   float c12 = c12i/pow(2,24);
-  
+
   float Pcomp = a0 + (b1 + c12 * Tadc) * Padc + b2 * Tadc;
   float pressure = Pcomp*((115.0-50.0)/1023.0)+50.0;
 

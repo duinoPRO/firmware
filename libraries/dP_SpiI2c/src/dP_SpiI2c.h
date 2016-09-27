@@ -1,15 +1,33 @@
+/*
+ * dP_SpiI2c.h is part of the duinoPRO firmware.
+ *
+ * duinoPRO is an Arduino™-compatible platform in a flat form factor with surface-mount,
+ * solderable modules. It is designed with commercialization of real products in mind.
+ * Note that we have designed duinoPRO to be compatible with the Arduino™ IDE.  This does
+ * not imply that duinoPRO is certified, tested or endorsed by Arduino™ in any way.
+ *
+ * For more information, contact info@duinopro.cc or visit www.duinopro.cc.
+ *
+ * This file is licensed under the BSD 3-Clause license
+ * (see https://github.com/duinoPRO/firmware/blob/master/duinoPRO_BSD_fwlicense.txt).
+ *
+ * Using duinoPRO core and libraries licensed under BSD for the firmware of a commercial
+ * product does not require you to release the source code for the firmware.
+ *
+*/
+
 #ifndef DP_SPII2C_H
 #define DP_SPII2C_H
 
-#include <Module.h>
+#include <dP_Module.h>
 
 /** \file
  */
 
 /** \brief Class for controlling a duinoPRO SPI/I2C Breakout module.
- *  
+ *
  */
-class dP_SpiI2c : public Module {
+class dP_SpiI2c : public dP_Module {
     private:
 		uint32_t spiFreq;
 		uint8_t spiOrder;
@@ -17,15 +35,15 @@ class dP_SpiI2c : public Module {
 		uint8_t i2cAddr;
 		uint8_t spiReadMask;
 		uint8_t spiWriteMask;
-		
+
     protected:
-		
+
     public:
 		/** \brief Constructor for dP_SpiI2c
 		 *  \param id - the location of the dP_SpiI2c module on the duinoPRO baseboard.
 		 */
 		dP_SpiI2c(int id);
-		
+
 		/** \brief Begin using the dP_SpiI2c module.
 		*/
 		void begin(void);
@@ -33,7 +51,7 @@ class dP_SpiI2c : public Module {
 		 *  \param lowpower - true to enable low-power mode, false to disable.
 		 */
 		void lowpower(bool lowpower);
-		
+
 		/** \brief Set the maximum SPI communication frequency.
 		 *  \param freq - The maximum frequency in Hz.
 		 */
@@ -55,7 +73,7 @@ class dP_SpiI2c : public Module {
 		 *  \param addr - The address of the I2C slave device.
 		 */
 		void setI2cAddress(uint8_t addr);
-		
+
 		/** \brief Read the value of a register in the slave device using SPI communication.
 		 *  \param addr - Address of the register to be read.
 		 *  \return The register value.
@@ -82,7 +100,7 @@ class dP_SpiI2c : public Module {
 		 *  \param data - The command to be sent.
 		 */
 		void write8BitSpi(uint8_t data);
-		
+
 		/** \brief Read the value of a register in the slave device using I2C communication.
 		 *  \param addr - Address of the register to be read.
 		 *  \return The register value.
@@ -109,7 +127,7 @@ class dP_SpiI2c : public Module {
 		 *  \param data - The command to be sent.
 		 */
 		void write8BitI2c(uint8_t data);
-		
+
 };
 
 #endif /* DP_SPII2C_H */

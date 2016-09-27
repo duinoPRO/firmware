@@ -1,28 +1,45 @@
 /*
+ * SpiI2c-SpiExample.ino is part of the duinoPRO firmware.
+ *
+ * duinoPRO is an Arduino™-compatible platform in a flat form factor with surface-mount,
+ * solderable modules. It is designed with commercialization of real products in mind.
+ * Note that we have designed duinoPRO to be compatible with the Arduino™ IDE.  This does
+ * not imply that duinoPRO is certified, tested or endorsed by Arduino™ in any way.
+ *
+ * For more information, contact info@duinopro.cc or visit www.duinopro.cc.
+ *
+ * This file is licensed under the BSD 3-Clause license
+ * (see https://github.com/duinoPRO/firmware/blob/master/duinoPRO_BSD_fwlicense.txt).
+ *
+ * Using duinoPRO core and libraries licensed under BSD for the firmware of a commercial
+ * product does not require you to release the source code for the firmware.
+ *
+*/
+
+/*
   SpiI2c-SpiExample
 
   Communicates with the ST L3GD20 3-axis digital gyroscope using
   the SPI/I2C module's SPI interface to read its outputs.
 
   Module Used: SPI/I2C
-  Author: SF
+  Author: SF, KC
   Date: 17 December 2015
   */
 
 // Include the necessary libraries
 #include <dP_SpiI2c.h>
-#include <SPI.h>
+
 
 // Define an instance of the SPI/I2C module, located on board
 // position 2
-dP_SpiI2c mySpiI2c(2);
+dP_SpiI2c mySpiI2c(4);
 
 // Declare the gyroscope output variables
 float gyroX, gyroY, gyroZ;
 
 void setup() {
-  // Begin using SPI and the instance of the SPI/I2C module
-  SPI.begin();
+  // Begin using the instance of the SPI/I2C module
   mySpiI2c.begin();
 
   // Initialize serial communication at 9600 bits per second
@@ -52,7 +69,7 @@ void loop() {
   gyroX = mySpiI2c.read16BitSignedSpi(0x29,0x28)*0.00875;
   gyroY = mySpiI2c.read16BitSignedSpi(0x2B,0x2A)*0.00875;
   gyroZ = mySpiI2c.read16BitSignedSpi(0x2D,0x2C)*0.00875;
-  
+
   Serial.print("X: ");
   Serial.print(gyroX);
   Serial.print(" Y: ");

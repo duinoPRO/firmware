@@ -1,13 +1,30 @@
+/*
+ * dP_Rtc.cpp is part of the duinoPRO firmware.
+ *
+ * duinoPRO is an Arduino™-compatible platform in a flat form factor with surface-mount,
+ * solderable modules. It is designed with commercialization of real products in mind.
+ * Note that we have designed duinoPRO to be compatible with the Arduino™ IDE.  This does
+ * not imply that duinoPRO is certified, tested or endorsed by Arduino™ in any way.
+ *
+ * For more information, contact info@duinopro.cc or visit www.duinopro.cc.
+ *
+ * This file is licensed under the BSD 3-Clause license
+ * (see https://github.com/duinoPRO/firmware/blob/master/duinoPRO_BSD_fwlicense.txt).
+ *
+ * Using duinoPRO core and libraries licensed under BSD for the firmware of a commercial
+ * product does not require you to release the source code for the firmware.
+ *
+*/
 
 #include <dP_Rtc.h>
-#include <SPI.h>
+
 
 // Module Pins
 #define INT_PIN 1
 #define RESET_PIN 3
 #define POWERDOWN_PIN 5 // This doesn't seem to apply to this module.
 
-dP_Rtc::dP_Rtc(int id) : Module(id) 
+dP_Rtc::dP_Rtc(int id) : dP_Module(id)
 {
 };
 
@@ -42,44 +59,45 @@ dP_Rtc::dP_Rtc(int id) : Module(id)
 void dP_Rtc::begin()
 {
 	spiSelect().mode(OUTPUT);
-    spiSelect().write(HIGH);
+  spiSelect().write(HIGH);
 	// Enables 32 kHz output, but disables battery-backed 32 kHz output, while maintaining the oscillator stop flag.
 	uint8_t val = readRegister(0x0F);
-	writeRegister(0x0F,(val | 0x08) & 0x88); 
+	writeRegister(0x0F,(val | 0x08) & 0x88);
+	spi().begin();
 }
 
 uint8_t dP_Rtc::readRegister(uint8_t addr)
 {
 	uint8_t val;
-	SPI.beginTransaction(SPISettings(MY_SPEED_MAX, MY_DATA_ORDER, MY_DATA_MODE));
+	spi().beginTransaction(MY_SPEED_MAX, MY_DATA_ORDER, MY_DATA_MODE);
 	spiSelect().write(LOW);
-	val = SPI.transfer(addr & 0x3F);
-	val = SPI.transfer(0x00);
+	val = spi().transfer(addr & 0x3F);
+	val = spi().transfer(0x00);
 	spiSelect().write(HIGH);
-	SPI.endTransaction();
+	spi().endTransaction();
 	return val;
 }
 
 void dP_Rtc::writeRegister(uint8_t addr, uint8_t data)
 {
-	SPI.beginTransaction(SPISettings(MY_SPEED_MAX, MY_DATA_ORDER, MY_DATA_MODE));
+	spi().beginTransaction(MY_SPEED_MAX, MY_DATA_ORDER, MY_DATA_MODE);
 	spiSelect().write(LOW);
-	SPI.transfer((addr & 0x3F) | 0x80);
-	SPI.transfer(data);
+	spi().transfer((addr & 0x3F) | 0x80);
+	spi().transfer(data);
 	spiSelect().write(HIGH);
-	SPI.endTransaction();
+	spi().endTransaction();
 }
 
 void dP_Rtc::setDate(uint16_t year, uint8_t month, uint8_t day)
 {
-	SPI.beginTransaction(SPISettings(MY_SPEED_MAX, MY_DATA_ORDER, MY_DATA_MODE));
+	spi().beginTransaction(MY_SPEED_MAX, MY_DATA_ORDER, MY_DATA_MODE);
 	spiSelect().write(LOW);
-	SPI.transfer(DATE_REG | 0x80);
-	SPI.transfer(REPACK_TO_BCD(day));
-	SPI.transfer(REPACK_TO_BCD(month));
-	SPI.transfer(REPACK_TO_BCD(year % 100));
+	spi().transfer(DATE_REG | 0x80);
+	spi().transfer(REPACK_TO_BCD(day));
+	spi().transfer(REPACK_TO_BCD(month));
+	spi().transfer(REPACK_TO_BCD(year % 100));
 	spiSelect().write(HIGH);
-	SPI.endTransaction();
+	spi().endTransaction();
 }
 
 void dP_Rtc::setDayWeek(uint8_t dayOfWeek)
@@ -89,29 +107,29 @@ void dP_Rtc::setDayWeek(uint8_t dayOfWeek)
 
 void dP_Rtc::setTime(uint8_t hour, uint8_t minute, uint8_t second)
 {
-	SPI.beginTransaction(SPISettings(MY_SPEED_MAX, MY_DATA_ORDER, MY_DATA_MODE));
+	spi().beginTransaction(MY_SPEED_MAX, MY_DATA_ORDER, MY_DATA_MODE);
 	spiSelect().write(LOW);
-	SPI.transfer(SECOND_REG | 0x80);
-	SPI.transfer(REPACK_TO_BCD(second));
-	SPI.transfer(REPACK_TO_BCD(minute));
-	SPI.transfer(REPACK_TO_BCD(hour));
+	spi().transfer(SECOND_REG | 0x80);
+	spi().transfer(REPACK_TO_BCD(second));
+	spi().transfer(REPACK_TO_BCD(minute));
+	spi().transfer(REPACK_TO_BCD(hour));
 	spiSelect().write(HIGH);
-	SPI.endTransaction();
+	spi().endTransaction();
 }
 
 void dP_Rtc::readDate(uint8_t *year, uint8_t *month, uint8_t *day)
 {
-	SPI.beginTransaction(SPISettings(MY_SPEED_MAX, MY_DATA_ORDER, MY_DATA_MODE));
+	spi().beginTransaction(MY_SPEED_MAX, MY_DATA_ORDER, MY_DATA_MODE);
 	spiSelect().write(LOW);
-	SPI.transfer(DATE_REG);
-	*day = SPI.transfer(0x00);
+	spi().transfer(DATE_REG);
+	*day = spi().transfer(0x00);
 	*day = UNPACK_FROM_BCD(*day);
-	*month = SPI.transfer(0x00) & 0x1F; // Ignores month register's century bit.
+	*month = spi().transfer(0x00) & 0x1F; // Ignores month register's century bit.
 	*month = UNPACK_FROM_BCD(*month);
-	*year = SPI.transfer(0x00);
+	*year = spi().transfer(0x00);
 	*year = UNPACK_FROM_BCD(*year);
 	spiSelect().write(HIGH);
-	SPI.endTransaction();
+	spi().endTransaction();
 }
 
 void dP_Rtc::readDayWeek(uint8_t *dayOfWeek)
@@ -119,17 +137,17 @@ void dP_Rtc::readDayWeek(uint8_t *dayOfWeek)
 	*dayOfWeek = readRegister(DAY_REG);
 }
 
-// Accounts for the case where the RTC is operating in 12 hour mode.	
+// Accounts for the case where the RTC is operating in 12 hour mode.
 void dP_Rtc::readTime(uint8_t *hour, uint8_t *minute, uint8_t *second)
 {
-	SPI.beginTransaction(SPISettings(MY_SPEED_MAX, MY_DATA_ORDER, MY_DATA_MODE));
+	spi().beginTransaction(MY_SPEED_MAX, MY_DATA_ORDER, MY_DATA_MODE);
 	spiSelect().write(LOW);
-	SPI.transfer(SECOND_REG);
-	*second = SPI.transfer(0x00);
+	spi().transfer(SECOND_REG);
+	*second = spi().transfer(0x00);
 	*second = UNPACK_FROM_BCD(*second);
-	*minute = SPI.transfer(0x00);
+	*minute = spi().transfer(0x00);
 	*minute = UNPACK_FROM_BCD(*minute);
-	*hour = SPI.transfer(0x00);
+	*hour = spi().transfer(0x00);
 	if ((*hour & 0x40) == 0x40) {
 		*hour = UNPACK_FROM_BCD(*hour & 0x1F) + (12 * ((*hour & 0x20) >> 5));
 	}
@@ -137,13 +155,13 @@ void dP_Rtc::readTime(uint8_t *hour, uint8_t *minute, uint8_t *second)
 		*hour = UNPACK_FROM_BCD(*hour);
 	}
 	spiSelect().write(HIGH);
-	SPI.endTransaction();
+	spi().endTransaction();
 }
 
 uint16_t dP_Rtc::readFatDate()
 {
 	uint8_t year, month, day;
-	readDate(&year,&month,&day);	
+	readDate(&year,&month,&day);
 	return (year + 20) << 9 | month << 5 | day; // RTC year 0 is 2000, FAT year 0 is 1980
 }
 
@@ -164,16 +182,16 @@ void dP_Rtc::dateString(char *str)
 void dP_Rtc::dateString(char *str, char separator)
 {
 	uint8_t day, month, year;
-	
-	SPI.beginTransaction(SPISettings(MY_SPEED_MAX, MY_DATA_ORDER, MY_DATA_MODE));
+
+	spi().beginTransaction(MY_SPEED_MAX, MY_DATA_ORDER, MY_DATA_MODE);
 	spiSelect().write(LOW);
-	SPI.transfer(DATE_REG);
-	day = SPI.transfer(0x00);
-	month = SPI.transfer(0x00) & 0x1F;
-	year = SPI.transfer(0x00);
+	spi().transfer(DATE_REG);
+	day = spi().transfer(0x00);
+	month = spi().transfer(0x00) & 0x1F;
+	year = spi().transfer(0x00);
 	spiSelect().write(HIGH);
-	SPI.endTransaction();
-	
+	spi().endTransaction();
+
 	str[0] = '2';
 	str[1] = '0';
 	str[2] = TOP_NIBBLE(year) + '0';
@@ -197,16 +215,16 @@ void dP_Rtc::timeString(char *str)
 void dP_Rtc::timeString(char *str, char separator)
 {
 	uint8_t hour, minute, second;
-	
-	SPI.beginTransaction(SPISettings(MY_SPEED_MAX, MY_DATA_ORDER, MY_DATA_MODE));
+
+	spi().beginTransaction(MY_SPEED_MAX, MY_DATA_ORDER, MY_DATA_MODE);
 	spiSelect().write(LOW);
-	SPI.transfer(SECOND_REG);
-	second = SPI.transfer(0x00);
-	minute = SPI.transfer(0x00);
-	hour = SPI.transfer(0x00);
+	spi().transfer(SECOND_REG);
+	second = spi().transfer(0x00);
+	minute = spi().transfer(0x00);
+	hour = spi().transfer(0x00);
 	spiSelect().write(HIGH);
-	SPI.endTransaction();
-	
+	spi().endTransaction();
+
 	str[0] = TOP_NIBBLE(hour) + '0';
 	str[1] = BOTTOM_NIBBLE(hour) + '0';
 	str[2] = separator;
@@ -221,20 +239,20 @@ void dP_Rtc::timeString(char *str, char separator)
 // dayOfWeek replaces day for appropriate alarm modes
 void dP_Rtc::alarmSet(uint8_t alarmnum, uint8_t alarmmode, uint8_t day, uint8_t hour, uint8_t minute, uint8_t second)
 {
-	SPI.beginTransaction(SPISettings(MY_SPEED_MAX, MY_DATA_ORDER, MY_DATA_MODE));
+	spi().beginTransaction(MY_SPEED_MAX, MY_DATA_ORDER, MY_DATA_MODE);
 	spiSelect().write(LOW);
 	if (alarmnum == 1) {
-		SPI.transfer(ALARM_1_SECOND_REG | 0x80);
-		SPI.transfer((alarmmode & 0x01) << 7 | REPACK_TO_BCD(second));
+		spi().transfer(ALARM_1_SECOND_REG | 0x80);
+		spi().transfer((alarmmode & 0x01) << 7 | REPACK_TO_BCD(second));
 	}
 	else {
-		SPI.transfer(ALARM_2_MINUTE_REG | 0x80);
+		spi().transfer(ALARM_2_MINUTE_REG | 0x80);
 	}
-	SPI.transfer((alarmmode & 0x02) << 6 | REPACK_TO_BCD(minute));
-	SPI.transfer((alarmmode & 0x04) << 5 | REPACK_TO_BCD(hour));
-	SPI.transfer((alarmmode & 0x08) << 4 | (alarmmode & 0x10) << 2 | REPACK_TO_BCD(day));
+	spi().transfer((alarmmode & 0x02) << 6 | REPACK_TO_BCD(minute));
+	spi().transfer((alarmmode & 0x04) << 5 | REPACK_TO_BCD(hour));
+	spi().transfer((alarmmode & 0x08) << 4 | (alarmmode & 0x10) << 2 | REPACK_TO_BCD(day));
 	spiSelect().write(HIGH);
-	SPI.endTransaction();
+	spi().endTransaction();
 }
 
 void dP_Rtc::alarmEnable(uint8_t alarmnum)
@@ -264,7 +282,7 @@ void dP_Rtc::alarmDisable(uint8_t alarmnum)
 	else {
 		writeRegister(STATUS_REG, val & 0xFD);
 	}
-	
+
 }
 
 void dP_Rtc::alarmStop(uint8_t alarmnum)
@@ -283,7 +301,7 @@ bool dP_Rtc::alarmIntRead()
 	return !pin(INT_PIN).read();
 }
 
-void dP_Rtc::alarmIntDisable() 
+void dP_Rtc::alarmIntDisable()
 {
 	uint8_t val = readRegister(CONTROL_REG);
 	writeRegister(CONTROL_REG, val & 0xF8);

@@ -1,4 +1,22 @@
 /*
+ * IOBreakout-Example.ino is part of the duinoPRO firmware. 
+ *
+ * duinoPRO is an Arduino™-compatible platform in a flat form factor with surface-mount,
+ * solderable modules. It is designed with commercialization of real products in mind.
+ * Note that we have designed duinoPRO to be compatible with the Arduino™ IDE.  This does
+ * not imply that duinoPRO is certified, tested or endorsed by Arduino™ in any way.
+ *
+ * For more information, contact info@duinopro.cc or visit www.duinopro.cc.
+ *
+ * This file is licensed under the BSD 3-Clause license
+ * (see https://github.com/duinoPRO/firmware/blob/master/duinoPRO_BSD_fwlicense.txt).
+ *
+ * Using duinoPRO core and libraries licensed under BSD for the firmware of a commercial
+ * product does not require you to release the source code for the firmware.
+ *
+*/
+
+/*
   IOBreakout-Example
 
   Reads the state one of the IO Breakout module's digital IO
@@ -8,13 +26,13 @@
   Author: SF
   Date: 13 January 2016
   */
-  
-// Include the required Module library
-#include <Module.h>
+
+// Include the required dP_Module library
+#include <dP_Module.h>
 
 // Define an instance of the IO Breakout module, located on
 // board position 2
-Module myIO(2);
+dP_Module myIO(2);
 
 // Declare the variable used to store the input state
 bool readIn;
@@ -38,7 +56,7 @@ void loop() {
   // Output the inverted input state via the output pin
   if (readIn)
   {
-    pinOut.write(LOW);    
+    pinOut.write(LOW);
   }
   else
   {

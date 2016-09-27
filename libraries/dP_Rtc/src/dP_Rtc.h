@@ -1,29 +1,47 @@
+/*
+ * dP_Rtc.h is part of the duinoPRO firmware. 
+ *
+ * duinoPRO is an Arduino™-compatible platform in a flat form factor with surface-mount,
+ * solderable modules. It is designed with commercialization of real products in mind.
+ * Note that we have designed duinoPRO to be compatible with the Arduino™ IDE.  This does
+ * not imply that duinoPRO is certified, tested or endorsed by Arduino™ in any way.
+ *
+ * For more information, contact info@duinopro.cc or visit www.duinopro.cc.
+ *
+ * This file is licensed under the BSD 3-Clause license
+ * (see https://github.com/duinoPRO/firmware/blob/master/duinoPRO_BSD_fwlicense.txt).
+ *
+ * Using duinoPRO core and libraries licensed under BSD for the firmware of a commercial
+ * product does not require you to release the source code for the firmware.
+ *
+*/
+
 #ifndef DP_RTC_H
 #define DP_RTC_H
 
-#include <Module.h>
+#include <dP_Module.h>
 
 /** \file
  */
 
 /** \brief Class for controlling a duinoPRO RTC module.
- *  
- */ 
-class dP_Rtc : public Module {
+ *
+ */
+class dP_Rtc : public dP_Module {
     private:
-	
+
     protected:
-	
+
     public:
 		/** \brief Constructor for dP_Rtc
 		 *  \param id - the location of the dP_Rtc module on the duinoPRO baseboard.
 		 */
 		dP_Rtc(int id);
-		
+
 		/** \brief Begin using the dP_Rtc module.
 		*/
 		void begin(void);
-		
+
 		/** \brief Read the value of a register in the RTC chip.
 		 *  \param addr - Address of the register to be read.
 		 *  \return The register value.
@@ -34,7 +52,7 @@ class dP_Rtc : public Module {
 		 *  \param data - The value to be written to the register.
 		 */
 		void writeRegister(uint8_t addr, uint8_t data);
-		
+
 		/** \brief Set the RTC's date (year, month and day).
 		 *  \param year - The year value (2000-2099) to be set.
 		 *  \param month - The month value (01-12) to be set.
@@ -67,7 +85,7 @@ class dP_Rtc : public Module {
 		 *  \param second - The RTC's second value (00-59).
 		 */
 		void readTime(uint8_t *hour, uint8_t *minute, uint8_t *second);
-		
+
 		/** \brief Read the RTC's date (year, month and day) in FAT format.
 		 *  \return The RTC's FAT date.
 		 */
@@ -76,7 +94,7 @@ class dP_Rtc : public Module {
 		 *  \return The RTC's FAT time.
 		 */
 		uint16_t readFatTime(void);
-		
+
 		/** \brief Read the RTC's date (year, month and day) in string format using the '-' separator.
 		 *  \param str - The RTC's date in string format (requires a string buffer of at least 11 characters).
 		 */
@@ -95,7 +113,7 @@ class dP_Rtc : public Module {
 		 *  \param separator - The separator to be used in the string.
 		 */
 		void timeString(char *str, char separator);
-				
+
 		/** \brief Set the specified alarm of the RTC chip using the specified mode and date/time values.
 		 *	Note that this does not enable the specified alarm.
 		 *	Date/time parameters that are irrelevant to the chosen alarm mode can be set to any allowable values.
@@ -132,7 +150,7 @@ class dP_Rtc : public Module {
 		 *  \param mode - 0 (1 Hz), 1 (1.024 kHz), 2 (4.096 kHz) or 3 (8.192 kHz).
 		 */
 		void sqwFreq(uint8_t mode);
-	
+
 };
 
 #endif /* DP_RTC_H */

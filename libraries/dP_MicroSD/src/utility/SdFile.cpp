@@ -18,7 +18,7 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-#include <Pin.h>
+#include <dP_Pin.h>
 #include "SdFat.h"
 #ifdef __AVR__
 #include <avr/pgmspace.h>

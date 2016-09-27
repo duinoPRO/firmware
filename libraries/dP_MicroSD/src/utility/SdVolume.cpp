@@ -17,8 +17,8 @@
  * along with the Arduino SdFat Library.  If not, see
  * <http://www.gnu.org/licenses/>.
  */
- 
-#include <Pin.h>
+
+#include <dP_Pin.h>
 #include "SdFat.h"
 //------------------------------------------------------------------------------
 // raw block cache

@@ -173,7 +173,7 @@ class Sd2Card {
    * Initialize an SD flash memory card with default clock rate and chip
    * select pin.  See sd2Card::init(uint8_t sckRateID, uint8_t chipSelectPin).
    */
- /* RJD 
+ /* RJD
   uint8_t init(void) {
     return init(SPI_FULL_SPEED, SD_CHIP_SELECT_PIN);
   }
@@ -183,12 +183,12 @@ class Sd2Card {
    * and the default SD chip select pin.
    * See sd2Card::init(uint8_t sckRateID, uint8_t chipSelectPin).
    */
-    /* RJD 
+    /* RJD
   uint8_t init(uint8_t sckRateID) {
     return init(sckRateID, SD_CHIP_SELECT_PIN);
   }
   */
-  uint8_t init(uint8_t sckRateID, Pin *chipSelectPin);   // RJD
+  uint8_t init(uint8_t sckRateID, dP_Pin *chipSelectPin);   // RJD
   void partialBlockRead(uint8_t value);
   /** Returns the current value, true or false, for partial block read. */
   uint8_t partialBlockRead(void) const {return partialBlockRead_;}
@@ -218,7 +218,7 @@ class Sd2Card {
   uint8_t writeStop(void);
  private:
   uint32_t block_;
-  Pin *chipSelectPin_;   // RJD
+  dP_Pin *chipSelectPin_;   // RJD
   uint8_t errorCode_;
   uint8_t inBlock_;
   uint16_t offset_;

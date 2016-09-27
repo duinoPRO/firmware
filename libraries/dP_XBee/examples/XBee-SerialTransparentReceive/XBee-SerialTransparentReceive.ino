@@ -1,5 +1,5 @@
 /*
- * XBee-SetupSpi.ino is part of the duinoPRO firmware.
+ * XBee-SerialTransparentReceive.ino is part of the duinoPRO firmware. 
  *
  * duinoPRO is an Arduino™-compatible platform in a flat form factor with surface-mount,
  * solderable modules. It is designed with commercialization of real products in mind.
@@ -17,15 +17,15 @@
 */
 
 /*
-  XBee-SetupSpi
+  XBee-SerialTransparentReceive
 
-  Configures the SPI pins of an XBee S2C ZB RF unit
-  connected to the XBee module using serial port
-  (UART) communication in transparent mode.
+  Receives data using serial port (UART) communication in
+  transparent mode with an XBee S2C ZB RF unit connected to
+  the XBee module.
 
   Module Used: XBee
-  Author: SF
-  Date: 11 January 2016
+  Author: SF, KC
+  Date: 19 September 2016
   */
 
 // Include the necessary libraries
@@ -33,10 +33,9 @@
 #include <dP_XBee.h>
 
 // Define instances of the duinoPRO and the XBee module,
-// located on board position 6/7 (the higher number is used
-// as the argument)
+// located on board position 6/7
 duinoPRO myduinoPRO;
-dP_XBee myXBee(7);
+dP_XBee myXBee(6, 7);
 
 void setup() {
   // Begin using the instance of the XBee module, with serial
@@ -48,17 +47,31 @@ void setup() {
   // Disable API mode, in case it is enabled, and enter
   // transparent mode.
   myXBee.apiEnable(false);
-
-  // Configure the XBee's SPI pins
-  myXBee.setupSpi();
-
-  // Switch the duinoPRO's serial port to debug mode and print
-  // "Done" to the serial monitor to indicate that SPI setup is
-  // complete
-  myduinoPRO.serialDebugMode();
-  Serial.println("Done");
 }
 
 void loop() {
-  // Nothing happens after setup() is complete
+  // Wait until there is incoming data to read
+  while (myXBee.serialAvailable() == 0)
+  {
+  }
+
+  // Allow time for data to be received past the first byte
+  delay(50);
+
+  // Read incoming characters and write them to the serial monitor
+  // while there is incoming data to read
+  while (myXBee.serialAvailable() > 0)
+  {
+      uint8_t byteIn = myXBee.readByte();
+      myduinoPRO.serialDebugMode(); // Switch the duinoPRO's serial port to debug mode
+      Serial.write(byteIn);
+      delay(10); // Required for serial port output before switching modes
+      myduinoPRO.serialModuleMode(); // Switch the serial port back to module 7 mode
+  }
+
+  // Print a newline to the serial monitor
+  myduinoPRO.serialDebugMode();
+  Serial.println();
+  delay(10);
+  myduinoPRO.serialModuleMode();
 }

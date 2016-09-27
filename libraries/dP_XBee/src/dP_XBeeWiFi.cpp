@@ -1,12 +1,29 @@
+/*
+ * dP_XBeeWiFi.cpp is part of the duinoPRO firmware.
+ *
+ * duinoPRO is an Arduino™-compatible platform in a flat form factor with surface-mount,
+ * solderable modules. It is designed with commercialization of real products in mind.
+ * Note that we have designed duinoPRO to be compatible with the Arduino™ IDE.  This does
+ * not imply that duinoPRO is certified, tested or endorsed by Arduino™ in any way.
+ *
+ * For more information, contact info@duinopro.cc or visit www.duinopro.cc.
+ *
+ * This file is licensed under the BSD 3-Clause license
+ * (see https://github.com/duinoPRO/firmware/blob/master/duinoPRO_BSD_fwlicense.txt).
+ *
+ * Using duinoPRO core and libraries licensed under BSD for the firmware of a commercial
+ * product does not require you to release the source code for the firmware.
+ *
+*/
 
 #include <dP_XBeeWiFi.h>
-#include <SPI.h>
 #include <duinoPRO.h>
+
 
 // Module Pins
 #define SLEEP_PIN 6
 
-dP_XBeeWiFi::dP_XBeeWiFi(int id) : Module(id) 
+dP_XBeeWiFi::dP_XBeeWiFi(int id, int id2) : dP_Module(id, id2)
 {
 };
 
@@ -14,7 +31,7 @@ dP_XBeeWiFi::dP_XBeeWiFi(int id) : Module(id)
 void dP_XBeeWiFi::beginUart(unsigned long baud)
 {
 	duinoPRO base;
-	//base.uartModule7Mode(); // Will need to be updated to account for boards with multiple serial ports.
+	//base.serialModuleMode(); // Will need to be updated to account for boards with multiple serial ports.
 	ser = &serial();
 	ser->begin(baud);
 	ser->write("test2");
@@ -56,13 +73,13 @@ void dP_XBeeWiFi::ATCommand(char *command, char *param)
 	ser->write("+++");
 	delay(1000);
 	waitForOK();
-	
+
 	ser->write("AT");
 	ser->write(command);
 	ser->write(param);
 	ser->write("\r");
 	waitForOK();
-	
+
 	ser->write("ATWR\r");
 	waitForOK();
 	ser->write("ATAC\r");
@@ -83,13 +100,13 @@ void dP_XBeeWiFi::ATReadCommand(char *command, char *readArray, uint8_t readArra
 	ser->write("+++");
 	delay(1000);
 	waitForOK();
-	
+
 	ser->write("AT");
 	ser->write(command);
 	ser->write("\r");
 	str = ser->readStringUntil('\r');
 	str.toCharArray(readArray, readArrayLen);
-	
+
 	ser->write("ATCN\r");
 	waitForOK();
 }
@@ -112,7 +129,7 @@ uint8_t dP_XBeeWiFi::readCloudIndicator(void)
 	ser->write("+++");
 	delay(1000);
 	waitForOK();
-	
+
 	ser->write("ATDI\r");
 	while (ser->available() == 0) {
 	}
@@ -131,9 +148,9 @@ void dP_XBeeWiFi::accessPointConnect(char *SSID, uint8_t security, char *passwor
 	ser->write("+++");
 	delay(1000);
 	waitForOK();
-	
+
 	// Enable Device Cloud if it is disabled.
-	ser->write("ATDO\r"); 
+	ser->write("ATDO\r");
 	while (ser->available() == 0) {
 	}
 	if (ser->read() == '0') {
@@ -146,12 +163,12 @@ void dP_XBeeWiFi::accessPointConnect(char *SSID, uint8_t security, char *passwor
 		while (ser->read() != '\r') {
 		}
 	}
-	
+
 	ser->write("ATID");
 	ser->write(SSID);
 	ser->write("\r");
 	waitForOK();
-	
+
 	ser->write("ATEE");
 	switch (security) {
 		case NO_SEC:
@@ -171,19 +188,19 @@ void dP_XBeeWiFi::accessPointConnect(char *SSID, uint8_t security, char *passwor
 	}
 	ser->write("\r");
 	waitForOK();
-	
+
 	ser->write("ATPK");
 	ser->write(password);
 	ser->write("\r");
 	waitForOK();
-	
+
 	ser->write("ATWR\r");
 	waitForOK();
 	ser->write("ATAC\r");
 	waitForOK();
 	ser->write("ATCN\r");
-	waitForOK();	
-	
+	waitForOK();
+
 	unsigned long starttime = millis();
 	while (readCloudIndicator() != '0') { // Waits for connection to Device Cloud.
 		if (millis() > starttime + timeout*1000) {
@@ -191,7 +208,7 @@ void dP_XBeeWiFi::accessPointConnect(char *SSID, uint8_t security, char *passwor
 			delay(10);
 			Serial.println("Error: Connection timeout.");
 			delay(100);
-			base.uartModule7Mode(); // Will need to be updated to account for boards with multiple serial ports.
+			base.serialModuleMode(); // Will need to be updated to account for boards with multiple serial ports.
 			accessPointDisconnect(); // Ensures that a connection isn't made after the timeout error.
 			break;
 		}
@@ -204,26 +221,26 @@ void dP_XBeeWiFi::accessPointDisconnect()
 	ser->write("+++");
 	delay(1000);
 	waitForOK();
-	
+
 	ser->write("ATID");
 	ser->write(NULL);
 	ser->write("\r");
 	waitForOK();
-	
+
 	ser->write("ATEE0\r");
 	waitForOK();
-	
+
 	ser->write("ATPK");
 	ser->write(NULL);
 	ser->write("\r");
 	waitForOK();
-	
+
 	ser->write("ATWR\r");
 	waitForOK();
 	ser->write("ATAC\r");
 	waitForOK();
 	ser->write("ATCN\r");
-	waitForOK();	
+	waitForOK();
 }
 
 // If sketch uploading fails with the XBee connected to the duinoPRO, or if the board keeps restarting with the XBee connected,
@@ -269,8 +286,8 @@ void dP_XBeeWiFi::apiFileWrite(char *filename, char *data, bool append)
 	}
 	for (int j = 0; j < strlen(data); j++) {
 		i = (i + (int)data[j]) % 256;
-	}	
-	
+	}
+
 	ser->write(0x7E);
 	delay(100);
 	ser->write(((16+strlen(filename)+strlen(data)) & 0xFF00) >> 2);

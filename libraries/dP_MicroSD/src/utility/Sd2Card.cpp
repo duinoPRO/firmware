@@ -18,8 +18,8 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-#include <Pin.h>
- 
+#include <dP_Pin.h>
+
 #define USE_SPI_LIB
 #include <Arduino.h>
 #include "Sd2Card.h"
@@ -244,7 +244,7 @@ uint8_t Sd2Card::eraseSingleBlockEnable(void) {
  * the value zero, false, is returned for failure.  The reason for failure
  * can be determined by calling errorCode() and errorData().
  */
-uint8_t Sd2Card::init(uint8_t sckRateID, Pin *chipSelectPin) {
+uint8_t Sd2Card::init(uint8_t sckRateID, dP_Pin *chipSelectPin) {
 
 
 Serial.println("1");
@@ -304,7 +304,7 @@ Serial.flush();
 
   chipSelectLow();
 
-  
+
 Serial.println("4");
 Serial.flush();
 
@@ -316,8 +316,8 @@ Serial.flush();
       goto fail;
     }
   }
-  
-    
+
+
 Serial.println("5");
 Serial.flush();
 
@@ -334,8 +334,8 @@ Serial.flush();
     }
     type(SD_CARD_TYPE_SD2);
   }
-  
-    
+
+
 Serial.println("6");
 Serial.flush();
 
@@ -350,8 +350,8 @@ Serial.flush();
       goto fail;
     }
   }
-  
-    
+
+
 Serial.println("7");
 Serial.flush();
 
@@ -367,8 +367,8 @@ Serial.flush();
     for (uint8_t i = 0; i < 3; i++) spiRec();
   }
   chipSelectHigh();
-  
-    
+
+
 Serial.println("8");
 Serial.flush();
 
