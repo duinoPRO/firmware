@@ -78,8 +78,9 @@ void dP_Sigfox::begin()
   pin(CONFIG_PIN).mode(OUTPUT);
   pin(CONFIG_PIN).write(HIGH);
 
-  //set frequency to AU/NZ settings
+  // set frequency to AU/NZ settings
   setRfFreqDomain(dP_Sigfox::ANZ);
+	// set RF power
   setRfPower(DEFAULT_RFPOWER);
 
 	serial().begin(RC232BAUD);
@@ -283,15 +284,57 @@ bool dP_Sigfox::setRetransmissionCount(char count)
 	}
 }
 
-#define TXDELAY_CONFIG_MEMORY_ADDR				0x2E
-#define NETWORKMODE_CONFIG_MEMORY_ADDR		0x3B
-#define UARTBAUD_CONFIG_MEMORY_ADDR				0x30
-#define UARTFLOWCTRL_CONFIG_MEMORY_ADDR   0x35
-
 // for test and dev purposes
 bool dP_Sigfox::enablePublicKey(bool publicKeyEnable)
 {
-		return setMemoryConfigParameter(PUBLICKEY_CONFIG_MEMORY_ADDR, publicKeyEnable);		// 0: unique ID+KEY, 1: public ID+KEY
+	return setMemoryConfigParameter(PUBLICKEY_CONFIG_MEMORY_ADDR, publicKeyEnable);		// 0: unique ID+KEY, 1: public ID+KEY
+}
+
+bool dP_Sigfox::setTxRetransmissionDelay(char delay)		// delay in 10ms
+{
+	if((delay >= 0) && (delay <= 200))
+	{
+		return setMemoryConfigParameter(TXDELAY_CONFIG_MEMORY_ADDR, delay);
+	}
+	else
+	{
+		return false;		// delay argument outside of allowed range
+	}
+}
+
+bool dP_Sigfox::saveNetworkMode(SigfoxNetworkModeSetting networkMode)
+{
+  return setMemoryConfigParameter(NETWORKMODE_CONFIG_MEMORY_ADDR, networkMode);
+}
+
+bool dP_Sigfox::setUartBaudRate(char baud)
+{
+/* Baud rate settings:
+	0x01: 2400
+	0x02: 4800
+	0x03: 9600
+	0x04: 14400
+	0x05: 19200
+	0x06: 28800
+	0x07: 38400
+	0x08: 57600
+	0x09: 76800
+	0x0A: 115200
+	0x0B: 230400  */
+	if((baud >= 0x01) && (baud <= 0x0B))
+	{
+		return setMemoryConfigParameter(UARTBAUD_CONFIG_MEMORY_ADDR, baud);
+	}
+	else
+	{
+		return false;		// baud rate argument outside of permitted range
+	}
+
+}
+
+bool dP_Sigfox::setUartFlowControl(SigfoxUartFlowControl flowControl)
+{
+	return setMemoryConfigParameter(UARTFLOWCTRL_CONFIG_MEMORY_ADDR, flowControl);
 }
 
 
@@ -313,11 +356,6 @@ int dP_Sigfox::readPkt(char *rxPkt)
   return 0;
 }
 
-/*bool dP_Sigfox::setNetworkMode(SigfoxNetworkModeSetting networkMode)
-{
-  return setMemoryConfigParameter(0x3B, networkMode);
-}*/
-
 
 void dP_Sigfox::transmitPkt(char *txPayload, char payloadLen)
 {
@@ -329,7 +367,6 @@ void dP_Sigfox::transmitPkt(char *txPayload, char payloadLen)
     serial().write(txPayload[i]);
   }
 }
-
 
 void dP_Sigfox::transmitSingleBit(bool data)
 {
@@ -351,7 +388,6 @@ bool dP_Sigfox::setOutOfBandPktPeriod(char period)
     return false;   // period argument outside of allowed range
   }
 }
-
 
 void dP_Sigfox::disableOutOfBandPkt()
 {

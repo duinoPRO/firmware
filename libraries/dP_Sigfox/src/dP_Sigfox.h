@@ -48,6 +48,13 @@ class dP_Sigfox : public dP_Module {
         ENABLE = 1,
         AUTO = 5,
       };
+      enum SigfoxUartFlowControl
+      {
+        NONE = 0,
+        CTSONLY = 1,
+        CTSRTS = 2,
+        RXTX = 3,
+      };
   		/** \brief Constructor for dP_Sigfox
   		 *  \param id - the 1st location of the dP_Sigfox module on the duinoPRO baseboard.
        *  \param id2 - the 2nd location of the dP_Sigfox module on the duinoPRO baseboard. (Sigfox module is a 2x1 module.)
@@ -84,7 +91,6 @@ class dP_Sigfox : public dP_Module {
       void exitSleep(void);
 
       // CONFIG MEMORY (NON-VOLATILE) settings methods
-      //bool setNetworkMode(SigfoxNetworkModeSetting networkMode);
       bool setRfFreqDomain(SigfoxRfFreqDomainSetting rfFreqDomain); //make private?
       bool setRfPower(char rfPower);  //make private?
       bool setSleepMode(SigfoxSleepMode sleepMode);
@@ -92,7 +98,10 @@ class dP_Sigfox : public dP_Module {
       bool setUartTimeout(char timeout);
       bool setRetransmissionCount(char count);
       bool enablePublicKey(bool publicKeyEnable);     // for test and dev purposes
-
+      bool setTxRetransmissionDelay(char delay);
+      bool saveNetworkMode(SigfoxNetworkModeSetting networkMode);
+      bool setUartBaudRate(char baud);
+      bool setUartFlowControl(SigfoxUartFlowControl flowControl);
 
       int readPkt(char *rxPkt);
 
