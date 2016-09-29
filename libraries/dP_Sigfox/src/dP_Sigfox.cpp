@@ -52,16 +52,16 @@
 // CONFIG MEMORY addresses
 #define RFDOMAIN_CONFIG_MEMORY_ADDR       0x00
 #define RFPOWER_CONFIG_MEMORY_ADDR        0x01
-#define SLEEPMODE_CONFIG_MEMORY_ADDR
-#define RSSIMODE_CONFIG_MEMORY_ADDR
-#define TIMEOUT_CONFIG_MEMORY_ADDR
-#define EOSCHAR_CONFIG_MEMORY_ADDR
-#define RETRANSMIT_CONFIG_MEMORY_ADDR
-#define PUBLICKEY_CONFIG_MEMORY_ADDR
-#define TXDELAY_CONFIG_MEMORY_ADDR
-#define NETWORKMODE_CONFIG_MEMORY_ADDR
-#define UARTBAUD_CONFIG_MEMORY_ADDR
-#define UARTFLOWCTRL_CONFIG_MEMORY_ADDR    0x35
+#define SLEEPMODE_CONFIG_MEMORY_ADDR			0x04
+#define RSSIMODE_CONFIG_MEMORY_ADDR				0x05
+#define TIMEOUT_CONFIG_MEMORY_ADDR				0x10
+#define EOSCHAR_CONFIG_MEMORY_ADDR				0x36
+#define RETRANSMIT_CONFIG_MEMORY_ADDR			0x27
+#define PUBLICKEY_CONFIG_MEMORY_ADDR			0x28
+#define TXDELAY_CONFIG_MEMORY_ADDR				0x2E
+#define NETWORKMODE_CONFIG_MEMORY_ADDR		0x3B
+#define UARTBAUD_CONFIG_MEMORY_ADDR				0x30
+#define UARTFLOWCTRL_CONFIG_MEMORY_ADDR   0x35
 
 
 dP_Sigfox::dP_Sigfox(int id, int id2) : dP_Module(id, id2)
@@ -198,7 +198,7 @@ bool dP_Sigfox::configureId(char *id)
   return sendConfigCmd(CONFIGURE_ID_CMD, id, 28, NULL, 0);
 }
 
-bool dP_Sigfox::setNetworkMode(NetworkModeSetting networkMode)  // setting stored in volatile memory only
+bool dP_Sigfox::setNetworkMode(SigfoxNetworkModeSetting networkMode)  // setting stored in volatile memory only
 {
   return sendConfigCmd(NETWORK_MODE_CMD, networkMode);
 }
@@ -246,16 +246,52 @@ void dP_Sigfox::exitSleep()
 }
 
 
-
-bool dP_Sigfox::setRfFreqDomain(RfFreqDomainSetting rfFreqDomain)
+bool dP_Sigfox::setRfFreqDomain(SigfoxRfFreqDomainSetting rfFreqDomain)
 {
   return setMemoryConfigParameter(RFDOMAIN_CONFIG_MEMORY_ADDR, rfFreqDomain);
 }
 
-
 bool dP_Sigfox::setRfPower(char rfPower)
 {
   return setMemoryConfigParameter(RFPOWER_CONFIG_MEMORY_ADDR, rfPower);
+}
+
+bool dP_Sigfox::setSleepMode(SigfoxSleepMode sleepMode)
+{
+	return setMemoryConfigParameter(SLEEPMODE_CONFIG_MEMORY_ADDR, sleepMode);
+}
+
+bool dP_Sigfox::setRssiMode(bool rssiEnable)		// append RSSI to received data
+{
+	return setMemoryConfigParameter(RSSIMODE_CONFIG_MEMORY_ADDR, rssiEnable);
+}
+
+bool dP_Sigfox::setUartTimeout(char timeout)	// time to wait to complete a UART message
+{
+	return setMemoryConfigParameter(TIMEOUT_CONFIG_MEMORY_ADDR, timeout);	//check arg??
+}
+
+bool dP_Sigfox::setRetransmissionCount(char count)
+{
+	if((count >= 0) && (count <= 2))
+	{
+		return setMemoryConfigParameter(RETRANSMIT_CONFIG_MEMORY_ADDR, count);
+	}
+	else
+	{
+		return false;		// retransmission count argument must be between 0 and 2 inclusive
+	}
+}
+
+#define TXDELAY_CONFIG_MEMORY_ADDR				0x2E
+#define NETWORKMODE_CONFIG_MEMORY_ADDR		0x3B
+#define UARTBAUD_CONFIG_MEMORY_ADDR				0x30
+#define UARTFLOWCTRL_CONFIG_MEMORY_ADDR   0x35
+
+// for test and dev purposes
+bool dP_Sigfox::enablePublicKey(bool publicKeyEnable)
+{
+		return setMemoryConfigParameter(PUBLICKEY_CONFIG_MEMORY_ADDR, publicKeyEnable);		// 0: unique ID+KEY, 1: public ID+KEY
 }
 
 
@@ -277,7 +313,7 @@ int dP_Sigfox::readPkt(char *rxPkt)
   return 0;
 }
 
-/*bool dP_Sigfox::setNetworkMode(NetworkModeSetting networkMode)
+/*bool dP_Sigfox::setNetworkMode(SigfoxNetworkModeSetting networkMode)
 {
   return setMemoryConfigParameter(0x3B, networkMode);
 }*/

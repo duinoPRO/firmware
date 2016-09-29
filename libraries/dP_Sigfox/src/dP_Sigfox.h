@@ -33,14 +33,20 @@ class dP_Sigfox : public dP_Module {
     protected:
 
     public:
-      enum NetworkModeSetting
+      enum SigfoxNetworkModeSetting
       {
           UPONLY,	 /**< uplink only */
         	UPDOWN,  /**< uplink/downlink */
       };
-      enum RfFreqDomainSetting
+      enum SigfoxRfFreqDomainSetting
       {
           ANZ = 3,
+      };
+      enum SigfoxSleepMode
+      {
+        DISABLE = 0,
+        ENABLE = 1,
+        AUTO = 5,
       };
   		/** \brief Constructor for dP_Sigfox
   		 *  \param id - the 1st location of the dP_Sigfox module on the duinoPRO baseboard.
@@ -65,9 +71,10 @@ class dP_Sigfox : public dP_Module {
 
       bool setMemoryConfigParameter(char addr, char value);
 
+      // CONFIG (VOLATILE) settings methods
       bool getId(char *id);
       bool configureId(char *id);
-      bool setNetworkMode(NetworkModeSetting networkMode);
+      bool setNetworkMode(SigfoxNetworkModeSetting networkMode);
       bool getQualityIndicator(char *q);
       bool getRssi(char *rssi);
       bool getTemperature(char *temp);
@@ -75,9 +82,17 @@ class dP_Sigfox : public dP_Module {
       bool getMemoryByte(char addr, char *val);
       bool sleep(void);
       void exitSleep(void);
-      //bool setNetworkMode(NetworkModeSetting networkMode);
-      bool setRfFreqDomain(RfFreqDomainSetting rfFreqDomain); //make private
-      bool setRfPower(char rfPower);  //make private
+
+      // CONFIG MEMORY (NON-VOLATILE) settings methods
+      //bool setNetworkMode(SigfoxNetworkModeSetting networkMode);
+      bool setRfFreqDomain(SigfoxRfFreqDomainSetting rfFreqDomain); //make private?
+      bool setRfPower(char rfPower);  //make private?
+      bool setSleepMode(SigfoxSleepMode sleepMode);
+      bool setRssiMode(bool rssiEnable);
+      bool setUartTimeout(char timeout);
+      bool setRetransmissionCount(char count);
+      bool enablePublicKey(bool publicKeyEnable);     // for test and dev purposes
+
 
       int readPkt(char *rxPkt);
 
