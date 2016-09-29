@@ -12,22 +12,20 @@
 #include <dP_LedButton.h>
 
 
-#define MYID 1
-#define DATATYPE 1
+#define RSSI_ENABLE_ADDR        0x05
 
-char txPkt[50];
+#define TESTMODE0_CMD           0x30
+
 
 // Define an instance of the Sigfox module, located on
 // board position 6/7
 dP_Sigfox mySigfox(6,7);
 
 
-#define WAITFORPROMPT_TIMEOUT     5000   // set wait for prompt to timeout after 1s
-
+char rssi, temp;
+char id[12];
 
 void setup() {
-  Serial.begin(9600);
-  delay(2000);
   // Begin using the instance of the Sigfox module
   mySigfox.begin();
 
@@ -41,31 +39,32 @@ void setup() {
 
   mySigfox.enterConfigMode(); // you must explictly enter config mode before setting config parameters
 
-  //set frequency to AU/NZ settings
-  mySigfox.setMemoryConfigParameter(0x00, 0x03);
   // enable RSSI mode - append RSSI to received data
-  mySigfox.setMemoryConfigParameter(0x05, 0x01);
+  mySigfox.setMemoryConfigParameter(RSSI_ENABLE_ADDR, 1);
   // set network mode to uplink/downlink
-  mySigfox.setNetworkMode(dP_Sigfox::UPONLY);
-  //mySigfox.setMemoryConfigParameter(0x3B, 0x01);
+  mySigfox.setNetworkMode(dP_Sigfox::UPDOWN);
 
   //print config parameters again
-  mySigfox.serial().write(0x30);
+  mySigfox.sendConfigCmd(TESTMODE0_CMD);
+
+  // read ID
+  mySigfox.getId(id);
+
+  // get RSSI
+  mySigfox.getRssi(&rssi);
+  // get temperature
+  mySigfox.getTemperature(&temp);
 
   mySigfox.exitConfigMode();  // you must explicitly exit config mode to return to idle mode
 }
 
 
 void loop() {
-  int i;
-  char val;
+  char rxPkt[20];
+  int len;
 
-  delay(1000);
-
-/*  for (i=0; i<30; i++)
+  if(len = mySigfox.readPkt(rxPkt))
   {
-    txPkt[i] = mySigfox.serial().read();
+    // packet received
   }
-
-  txPkt[i] = '\0';*/
 }

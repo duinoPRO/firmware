@@ -36,11 +36,11 @@ class dP_Sigfox : public dP_Module {
       enum NetworkModeSetting
       {
           UPONLY,	 /**< uplink only */
-        	UPDOWN   /**< uplink/downlink */
+        	UPDOWN,  /**< uplink/downlink */
       };
       enum RfFreqDomainSetting
       {
-          ANZ = 3
+          ANZ = 3,
       };
   		/** \brief Constructor for dP_Sigfox
   		 *  \param id - the 1st location of the dP_Sigfox module on the duinoPRO baseboard.
@@ -52,20 +52,40 @@ class dP_Sigfox : public dP_Module {
   		*/
   		void begin(void);
 
-      void enterConfigMode(void);
+      bool enterConfigMode(void);
       void exitConfigMode(void);
 
       bool waitForPrompt(int timeout);
 
       bool sendConfigCmd(char cmd);
       bool sendConfigCmd(char cmd, char arg);
+      bool sendConfigCmd(char cmd, char *resp);
+      bool sendConfigCmd(char cmd, char arg, char *resp);
+      bool sendConfigCmd(char cmd, char *arg, int argc, char *ret, int retc);
 
       bool setMemoryConfigParameter(char addr, char value);
 
-      void setNetworkMode(NetworkModeSetting networkMode);
-      void setRfFreqDomain(RfFreqDomainSetting rfFreqDomain);
+      bool getId(char *id);
+      bool configureId(char *id);
+      bool setNetworkMode(NetworkModeSetting networkMode);
+      bool getQualityIndicator(char *q);
+      bool getRssi(char *rssi);
+      bool getTemperature(char *temp);
+      bool getBattVoltage(char *batt);
+      bool getMemoryByte(char addr, char *val);
+      bool sleep(void);
+      void exitSleep(void);
+      //bool setNetworkMode(NetworkModeSetting networkMode);
+      bool setRfFreqDomain(RfFreqDomainSetting rfFreqDomain); //make private
+      bool setRfPower(char rfPower);  //make private
 
       int readPkt(char *rxPkt);
+
+      void transmitPkt(char *txPayload, char payloadLen);
+      void transmitSingleBit(bool data);
+
+      bool setOutOfBandPktPeriod(char period);
+      void disableOutOfBandPkt(void);
 };
 
 #endif /* DP_SIGFOX_H */

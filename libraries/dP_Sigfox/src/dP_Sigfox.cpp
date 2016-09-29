@@ -21,20 +21,47 @@
 
 
 // Module Pins
-#define CONFIG_PIN                    1
-#define RESET_PIN                     6
+#define CONFIG_PIN                        1
+#define RESET_PIN                         6
 
-#define RC232BAUD                     19200
-#define DEFAULT_RFPOWER               100     // 0-255.  PA step down value from the maximum power. Default setting (0x05) gives +25 dBm conducted power.
+#define RC232BAUD                         19200
+#define DEFAULT_RFPOWER                   100     // 0-255.  PA step down value from the maximum power. Default setting (0x05) gives +25 dBm conducted power.
 
-#define WAITFORPROMPT_TIMEOUT_INIT    500
-#define WAITFORPROMPT_TIMEOUT         200
+#define WAITFORPROMPT_TIMEOUT_INIT        500
+#define WAITFORPROMPT_TIMEOUT             200
+#define RESPONSE_TIMEOUT                  200
 
-// CONFIG parameters
-#define ENTER_CONFIG_CMD              0x00
-#define EXIT_CONFIG_CMD               0x58
-#define MEMORY_CONFIG_CMD             0x4D
-#define END_MEMORY_CONFIG_CMD         0xFF
+// CONFIG commands
+#define ENTER_CONFIG_CMD                  0x00
+#define EXIT_CONFIG_CMD                   0x58
+#define MEMORY_CONFIG_CMD                 0x4D
+#define END_MEMORY_CONFIG_CMD             0xFF
+
+#define READ_ID_CMD                       0x39
+#define CONFIGURE_ID_CMD                  0x41
+#define NETWORK_MODE_CMD                  0x46
+#define GET_QUALITY_CMD                   0x51
+#define GET_RSSI_CMD                      0x53
+#define GET_TEMP_CMD                      0x55
+#define GET_BATT_VOLTAGE_CMD              0x56
+#define GET_MEMORY_BYTE_CMD               0x59
+#define SLEEP_MODE_CMD                    0x5A
+#define EXIT_SLEEP_CMD                    0xFF
+#define OOB_PKT_PERIOD_CMD                0x2F
+
+// CONFIG MEMORY addresses
+#define RFDOMAIN_CONFIG_MEMORY_ADDR       0x00
+#define RFPOWER_CONFIG_MEMORY_ADDR        0x01
+#define SLEEPMODE_CONFIG_MEMORY_ADDR
+#define RSSIMODE_CONFIG_MEMORY_ADDR
+#define TIMEOUT_CONFIG_MEMORY_ADDR
+#define EOSCHAR_CONFIG_MEMORY_ADDR
+#define RETRANSMIT_CONFIG_MEMORY_ADDR
+#define PUBLICKEY_CONFIG_MEMORY_ADDR
+#define TXDELAY_CONFIG_MEMORY_ADDR
+#define NETWORKMODE_CONFIG_MEMORY_ADDR
+#define UARTBAUD_CONFIG_MEMORY_ADDR
+#define UARTFLOWCTRL_CONFIG_MEMORY_ADDR    0x35
 
 
 dP_Sigfox::dP_Sigfox(int id, int id2) : dP_Module(id, id2)
@@ -59,10 +86,12 @@ void dP_Sigfox::begin()
 }
 
 
-void dP_Sigfox::enterConfigMode()
+bool dP_Sigfox::enterConfigMode()
 {
   serial().write(ENTER_CONFIG_CMD);
-  if(!waitForPrompt(WAITFORPROMPT_TIMEOUT_INIT)) { for(;;); }
+  if(!waitForPrompt(WAITFORPROMPT_TIMEOUT_INIT)) { return false; }
+
+  return true;
 }
 
 
@@ -97,40 +126,137 @@ bool dP_Sigfox::waitForPrompt(int timeout)  //timeout in ~ms
 
 bool dP_Sigfox::sendConfigCmd(char cmd)
 {
-  serial().write(cmd);
-  if(!waitForPrompt(WAITFORPROMPT_TIMEOUT)) { for(;;); }
+  return sendConfigCmd(cmd, NULL, 0, NULL, 0);
 }
 
 bool dP_Sigfox::sendConfigCmd(char cmd, char arg)
 {
+  return sendConfigCmd(cmd, &arg, 1, NULL, 0);
+}
+
+bool dP_Sigfox::sendConfigCmd(char cmd, char *resp)
+{
+  return sendConfigCmd(cmd, NULL, 0, resp, 1);
+}
+
+bool dP_Sigfox::sendConfigCmd(char cmd, char arg, char *resp)
+{
+  return sendConfigCmd(cmd, &arg, 1, resp, 1);
+}
+
+bool dP_Sigfox::sendConfigCmd(char cmd, char *arg, int argc, char *ret, int retc)
+{
   serial().write(cmd);
-  if(!waitForPrompt(WAITFORPROMPT_TIMEOUT)) { for(;;); }
-  serial().write(arg);
-  if(!waitForPrompt(WAITFORPROMPT_TIMEOUT)) { for(;;); }
+  serial().write((uint8_t*)arg, argc);
+
+  int i = 0;
+  for (int timeout = 0; (timeout < 300) && (i < retc);)
+  {
+    if(serial().available())
+    {
+      ret[i++] = serial().read();
+      timeout = 0;
+    }
+    else
+    {
+      delay(1);
+      timeout++;
+    }
+  }
+  if (i < retc)
+  {
+    return false;
+  }
+  if (!waitForPrompt(WAITFORPROMPT_TIMEOUT)) { return false; }
+  return true;
 }
 
 
 bool dP_Sigfox::setMemoryConfigParameter(char addr, char value)
 {
-  serial().write(MEMORY_CONFIG_CMD);
-  if(!waitForPrompt(WAITFORPROMPT_TIMEOUT)) { for(;;); }
+  //serial().write(MEMORY_CONFIG_CMD);
+  //if(!waitForPrompt(WAITFORPROMPT_TIMEOUT)) { return false; }
+  sendConfigCmd(MEMORY_CONFIG_CMD);
   serial().write(addr);
   serial().write(value);
-  serial().write(END_MEMORY_CONFIG_CMD);
+  sendConfigCmd(END_MEMORY_CONFIG_CMD);
+  //serial().write(END_MEMORY_CONFIG_CMD);
 
-  if(!waitForPrompt(WAITFORPROMPT_TIMEOUT)) { for(;;); }
+  //if(!waitForPrompt(WAITFORPROMPT_TIMEOUT)) { return false; }
+
+  return true;
 }
 
 
-void dP_Sigfox::setNetworkMode(NetworkModeSetting networkMode)
+bool dP_Sigfox::getId(char *id)
 {
-  setMemoryConfigParameter(0x3B, networkMode);
+  return sendConfigCmd(READ_ID_CMD, NULL, 0, id, 12);
 }
 
- void dP_Sigfox::setRfFreqDomain(RfFreqDomainSetting rfFreqDomain)
- {
-    setMemoryConfigParameter(0x00, rfFreqDomain);
- }
+bool dP_Sigfox::configureId(char *id)
+{
+  return sendConfigCmd(CONFIGURE_ID_CMD, id, 28, NULL, 0);
+}
+
+bool dP_Sigfox::setNetworkMode(NetworkModeSetting networkMode)  // setting stored in volatile memory only
+{
+  return sendConfigCmd(NETWORK_MODE_CMD, networkMode);
+}
+
+bool dP_Sigfox::getQualityIndicator(char *q)
+{
+  return sendConfigCmd(GET_QUALITY_CMD, q);
+}
+
+bool dP_Sigfox::getRssi(char *rssi)
+{
+  return sendConfigCmd(GET_RSSI_CMD, rssi);
+}
+
+bool dP_Sigfox::getTemperature(char *temp)
+{
+  return sendConfigCmd(GET_TEMP_CMD, temp);
+}
+
+bool dP_Sigfox::getBattVoltage(char *batt)
+{
+  return sendConfigCmd(GET_BATT_VOLTAGE_CMD, batt);
+}
+
+bool dP_Sigfox::getMemoryByte(char addr, char *val)
+{
+  if((addr >= 0x00) && (addr <= 0x7F))
+  {
+    return sendConfigCmd(GET_MEMORY_BYTE_CMD, addr, val);
+  }
+  else
+  {
+    return false;   // addr outside of configuration memory address range
+  }
+}
+
+bool dP_Sigfox::sleep()
+{
+  return sendConfigCmd(SLEEP_MODE_CMD);
+}
+
+void dP_Sigfox::exitSleep()
+{
+    serial().write(EXIT_SLEEP_CMD);
+}
+
+
+
+bool dP_Sigfox::setRfFreqDomain(RfFreqDomainSetting rfFreqDomain)
+{
+  return setMemoryConfigParameter(RFDOMAIN_CONFIG_MEMORY_ADDR, rfFreqDomain);
+}
+
+
+bool dP_Sigfox::setRfPower(char rfPower)
+{
+  return setMemoryConfigParameter(RFPOWER_CONFIG_MEMORY_ADDR, rfPower);
+}
 
 
 int dP_Sigfox::readPkt(char *rxPkt)
@@ -151,58 +277,47 @@ int dP_Sigfox::readPkt(char *rxPkt)
   return 0;
 }
 
-
-void dP_Sigfox::setRfPower(char rfPower)
+/*bool dP_Sigfox::setNetworkMode(NetworkModeSetting networkMode)
 {
-  setMemoryConfigParameter(0x01, rfPower);
+  return setMemoryConfigParameter(0x3B, networkMode);
+}*/
+
 
 void dP_Sigfox::transmitPkt(char *txPayload, char payloadLen)
 {
-  char txPkt[payloadLen];
-
-  txPkt[0] = payloadLen;
+  //send length byte
+  serial().write(payloadLen);
+  //send payload
   for(int i = 0; i < payloadLen; i++)
   {
-    txPkt[i+1] = txPayload[i];
+    serial().write(txPayload[i]);
   }
-
-  serial().write(txPkt, payloadLen + 1);
 }
 
 
-void dP_Sigfox::transmitSingleBit(char data)
+void dP_Sigfox::transmitSingleBit(bool data)
 {
-  char txPkt[2];
-
-  txPkt[0] = 0x10;
-  txPkt[1] = data;   // data is one byte where only the LSB is relevant
-
-  serial().write(txPkt, 2);
+  //send length byte
+  serial().write(0x10);
+  //send payload
+  serial().write(data ? 0x01 : 0x00); // data is one byte where only the LSB is relevant
 }
 
 
-/*void dP_Sigfox::enableOutOfBandPkt()
+bool dP_Sigfox::setOutOfBandPktPeriod(char period)
 {
-
-}
-
-
-void dP_Sigfox::setOutOfBandPktPeriod(char period)
-{
-  setMemoryConfigParameter(0x2F, period);     // 0: disabled, 1-15: hours
+  if((period >= 0) && (period <= 15))
+  {
+    return setMemoryConfigParameter(OOB_PKT_PERIOD_CMD, period);     // 0: disabled, 1-15: hours
+  }
+  else
+  {
+    return false;   // period argument outside of allowed range
+  }
 }
 
 
 void dP_Sigfox::disableOutOfBandPkt()
 {
-
-}*/
-
-//sleep mode
-//read RSSI
-//read power
-//read temp
-//read config memory
-//set tx power
-//set network mode (volatile) ??
-//read quality indicator??
+  setOutOfBandPktPeriod(0);
+}
