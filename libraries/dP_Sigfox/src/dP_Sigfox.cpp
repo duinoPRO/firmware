@@ -146,6 +146,7 @@ bool dP_Sigfox::sendConfigCmd(char cmd, char arg, char *resp)
 bool dP_Sigfox::sendConfigCmd(char cmd, char *arg, int argc, char *ret, int retc)
 {
     serial().write(cmd);
+    if(!waitForPrompt(WAITFORPROMPT_TIMEOUT)) { return false };
     serial().write((uint8_t*)arg, argc);
 
     int i = 0;
