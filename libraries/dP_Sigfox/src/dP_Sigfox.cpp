@@ -52,15 +52,15 @@
 // CONFIG MEMORY addresses
 #define RFDOMAIN_CONFIG_MEMORY_ADDR       0x00
 #define RFPOWER_CONFIG_MEMORY_ADDR        0x01
-#define SLEEPMODE_CONFIG_MEMORY_ADDR			0x04
-#define RSSIMODE_CONFIG_MEMORY_ADDR				0x05
-#define TIMEOUT_CONFIG_MEMORY_ADDR				0x10
-#define EOSCHAR_CONFIG_MEMORY_ADDR				0x36
-#define RETRANSMIT_CONFIG_MEMORY_ADDR			0x27
-#define PUBLICKEY_CONFIG_MEMORY_ADDR			0x28
-#define TXDELAY_CONFIG_MEMORY_ADDR				0x2E
-#define NETWORKMODE_CONFIG_MEMORY_ADDR		0x3B
-#define UARTBAUD_CONFIG_MEMORY_ADDR				0x30
+#define SLEEPMODE_CONFIG_MEMORY_ADDR      0x04
+#define RSSIMODE_CONFIG_MEMORY_ADDR        0x05
+#define TIMEOUT_CONFIG_MEMORY_ADDR        0x10
+#define EOSCHAR_CONFIG_MEMORY_ADDR        0x36
+#define RETRANSMIT_CONFIG_MEMORY_ADDR      0x27
+#define PUBLICKEY_CONFIG_MEMORY_ADDR      0x28
+#define TXDELAY_CONFIG_MEMORY_ADDR        0x2E
+#define NETWORKMODE_CONFIG_MEMORY_ADDR    0x3B
+#define UARTBAUD_CONFIG_MEMORY_ADDR        0x30
 #define UARTFLOWCTRL_CONFIG_MEMORY_ADDR   0x35
 
 
@@ -71,325 +71,317 @@ dP_Sigfox::dP_Sigfox(int id, int id2) : dP_Module(id, id2)
 
 void dP_Sigfox::begin()
 {
-	duinoPRO base;
-	base.serialModuleMode();
+    duinoPRO baseboard;
+    baseboard.serialModuleMode();
 
-  //disable config mode; CONFIG_PIN is active low
-  pin(CONFIG_PIN).mode(OUTPUT);
-  pin(CONFIG_PIN).write(HIGH);
+    //disable config mode; CONFIG_PIN is active low
+    pin(CONFIG_PIN).mode(OUTPUT);
+    pin(CONFIG_PIN).write(HIGH);
 
-  // set frequency to AU/NZ settings
-  setRfFreqDomain(dP_Sigfox::ANZ);
-	// set RF power
-  setRfPower(DEFAULT_RFPOWER);
+    // set frequency to AU/NZ settings
+    setRfFreqDomain(dP_Sigfox::ANZ);
+    // set RF power
+    setRfPower(DEFAULT_RFPOWER);
 
-	serial().begin(RC232BAUD);
+    serial().begin(RC232BAUD);
 }
 
 
 bool dP_Sigfox::enterConfigMode()
 {
-  serial().write(ENTER_CONFIG_CMD);
-  if(!waitForPrompt(WAITFORPROMPT_TIMEOUT_INIT)) { return false; }
-
-  return true;
+    serial().write(ENTER_CONFIG_CMD);
+    return waitForPrompt(WAITFORPROMPT_TIMEOUT);
 }
 
 
 void dP_Sigfox::exitConfigMode()
 {
-  serial().write(EXIT_CONFIG_CMD);
+    serial().write(EXIT_CONFIG_CMD);
 }
 
 
 bool dP_Sigfox::waitForPrompt(int timeout)  //timeout in ~ms
 {
-  int timeoutCount = 0;
+    int timeoutCount = 0;
 
-  while(timeoutCount < timeout)
-  {
-    if(serial().available())
+    while(timeoutCount < timeout)
     {
-        if((char)serial().read() == '>')
+        if(serial().available())
         {
-          return true;
+            if((char)serial().read() == '>')
+            {
+                return true;
+            }
+        }
+        else
+        {
+            delay(1);
+            timeoutCount++;
         }
     }
-    else
-    {
-      delay(1);
-      timeoutCount++;
-    }
-  }
-  return false;   // wait has timed out
+    return false;   // wait has timed out
 }
 
 
 bool dP_Sigfox::sendConfigCmd(char cmd)
 {
-  return sendConfigCmd(cmd, NULL, 0, NULL, 0);
+    return sendConfigCmd(cmd, NULL, 0, NULL, 0);
 }
 
 bool dP_Sigfox::sendConfigCmd(char cmd, char arg)
 {
-  return sendConfigCmd(cmd, &arg, 1, NULL, 0);
+    return sendConfigCmd(cmd, &arg, 1, NULL, 0);
 }
 
 bool dP_Sigfox::sendConfigCmd(char cmd, char *resp)
 {
-  return sendConfigCmd(cmd, NULL, 0, resp, 1);
+    return sendConfigCmd(cmd, NULL, 0, resp, 1);
 }
 
 bool dP_Sigfox::sendConfigCmd(char cmd, char arg, char *resp)
 {
-  return sendConfigCmd(cmd, &arg, 1, resp, 1);
+    return sendConfigCmd(cmd, &arg, 1, resp, 1);
 }
 
 bool dP_Sigfox::sendConfigCmd(char cmd, char *arg, int argc, char *ret, int retc)
 {
-  serial().write(cmd);
-  serial().write((uint8_t*)arg, argc);
+    serial().write(cmd);
+    serial().write((uint8_t*)arg, argc);
 
-  int i = 0;
-  for (int timeout = 0; (timeout < 300) && (i < retc);)
-  {
-    if(serial().available())
+    int i = 0;
+    for (int timeout = 0; (timeout < RESPONSE_TIMEOUT) && (i < retc);)
     {
-      ret[i++] = serial().read();
-      timeout = 0;
+        if(serial().available())
+        {
+            ret[i++] = serial().read();
+            timeout = 0;
+        }
+        else
+        {
+            delay(1);
+            timeout++;
+        }
     }
-    else
+    if (i < retc)
     {
-      delay(1);
-      timeout++;
+        return false;
     }
-  }
-  if (i < retc)
-  {
-    return false;
-  }
-  if (!waitForPrompt(WAITFORPROMPT_TIMEOUT)) { return false; }
-  return true;
+    return waitForPrompt(WAITFORPROMPT_TIMEOUT);
 }
 
 
 bool dP_Sigfox::setMemoryConfigParameter(char addr, char value)
 {
-  //serial().write(MEMORY_CONFIG_CMD);
-  //if(!waitForPrompt(WAITFORPROMPT_TIMEOUT)) { return false; }
-  sendConfigCmd(MEMORY_CONFIG_CMD);
-  serial().write(addr);
-  serial().write(value);
-  sendConfigCmd(END_MEMORY_CONFIG_CMD);
-  //serial().write(END_MEMORY_CONFIG_CMD);
+    sendConfigCmd(MEMORY_CONFIG_CMD);
+    serial().write(addr);
+    serial().write(value);
+    sendConfigCmd(END_MEMORY_CONFIG_CMD);
 
-  //if(!waitForPrompt(WAITFORPROMPT_TIMEOUT)) { return false; }
-
-  return true;
+    return true;
 }
 
 
 bool dP_Sigfox::getId(char *id)
 {
-  return sendConfigCmd(READ_ID_CMD, NULL, 0, id, 12);
+    return sendConfigCmd(READ_ID_CMD, NULL, 0, id, 12);
 }
 
 bool dP_Sigfox::configureId(char *id)
 {
-  return sendConfigCmd(CONFIGURE_ID_CMD, id, 28, NULL, 0);
+    return sendConfigCmd(CONFIGURE_ID_CMD, id, 28, NULL, 0);
 }
 
 bool dP_Sigfox::setNetworkMode(SigfoxNetworkModeSetting networkMode)  // setting stored in volatile memory only
 {
-  return sendConfigCmd(NETWORK_MODE_CMD, networkMode);
+    return sendConfigCmd(NETWORK_MODE_CMD, networkMode);
 }
 
 bool dP_Sigfox::getQualityIndicator(char *q)
 {
-  return sendConfigCmd(GET_QUALITY_CMD, q);
+    return sendConfigCmd(GET_QUALITY_CMD, q);
 }
 
 bool dP_Sigfox::getRssi(char *rssi)
 {
-  return sendConfigCmd(GET_RSSI_CMD, rssi);
+    return sendConfigCmd(GET_RSSI_CMD, rssi);
 }
 
 bool dP_Sigfox::getTemperature(char *temp)
 {
-  return sendConfigCmd(GET_TEMP_CMD, temp);
+    return sendConfigCmd(GET_TEMP_CMD, temp);
 }
 
 bool dP_Sigfox::getBattVoltage(char *batt)
 {
-  return sendConfigCmd(GET_BATT_VOLTAGE_CMD, batt);
+    return sendConfigCmd(GET_BATT_VOLTAGE_CMD, batt);
 }
 
 bool dP_Sigfox::getMemoryByte(char addr, char *val)
 {
-  if((addr >= 0x00) && (addr <= 0x7F))
-  {
-    return sendConfigCmd(GET_MEMORY_BYTE_CMD, addr, val);
-  }
-  else
-  {
-    return false;   // addr outside of configuration memory address range
-  }
+    if((addr >= 0x00) && (addr <= 0x7F))
+    {
+        return sendConfigCmd(GET_MEMORY_BYTE_CMD, addr, val);
+    }
+    else
+    {
+        return false;   // addr outside of configuration memory address range
+    }
 }
 
 bool dP_Sigfox::sleep()
 {
-  return sendConfigCmd(SLEEP_MODE_CMD);
+    return sendConfigCmd(SLEEP_MODE_CMD);
 }
 
 void dP_Sigfox::exitSleep()
 {
-    serial().write(EXIT_SLEEP_CMD);
+        serial().write(EXIT_SLEEP_CMD);
 }
 
 
 bool dP_Sigfox::setRfFreqDomain(SigfoxRfFreqDomainSetting rfFreqDomain)
 {
-  return setMemoryConfigParameter(RFDOMAIN_CONFIG_MEMORY_ADDR, rfFreqDomain);
+    return setMemoryConfigParameter(RFDOMAIN_CONFIG_MEMORY_ADDR, rfFreqDomain);
 }
 
 bool dP_Sigfox::setRfPower(char rfPower)
 {
-  return setMemoryConfigParameter(RFPOWER_CONFIG_MEMORY_ADDR, rfPower);
+    return setMemoryConfigParameter(RFPOWER_CONFIG_MEMORY_ADDR, rfPower);
 }
 
 bool dP_Sigfox::setSleepMode(SigfoxSleepMode sleepMode)
 {
-	return setMemoryConfigParameter(SLEEPMODE_CONFIG_MEMORY_ADDR, sleepMode);
+    return setMemoryConfigParameter(SLEEPMODE_CONFIG_MEMORY_ADDR, sleepMode);
 }
 
-bool dP_Sigfox::setRssiMode(bool rssiEnable)		// append RSSI to received data
+bool dP_Sigfox::setRssiMode(bool rssiEnable)    // append RSSI to received data
 {
-	return setMemoryConfigParameter(RSSIMODE_CONFIG_MEMORY_ADDR, rssiEnable);
+    return setMemoryConfigParameter(RSSIMODE_CONFIG_MEMORY_ADDR, rssiEnable);
 }
 
-bool dP_Sigfox::setUartTimeout(char timeout)	// time to wait to complete a UART message
+bool dP_Sigfox::setUartTimeout(char timeout)  // time to wait to complete a UART message
 {
-	return setMemoryConfigParameter(TIMEOUT_CONFIG_MEMORY_ADDR, timeout);	//check arg??
+    return setMemoryConfigParameter(TIMEOUT_CONFIG_MEMORY_ADDR, timeout);  //check arg??
 }
 
 bool dP_Sigfox::setRetransmissionCount(char count)
 {
-	if((count >= 0) && (count <= 2))
-	{
-		return setMemoryConfigParameter(RETRANSMIT_CONFIG_MEMORY_ADDR, count);
-	}
-	else
-	{
-		return false;		// retransmission count argument must be between 0 and 2 inclusive
-	}
+    if((count >= 0) && (count <= 2))
+    {
+        return setMemoryConfigParameter(RETRANSMIT_CONFIG_MEMORY_ADDR, count);
+    }
+    else
+    {
+        return false;    // retransmission count argument must be between 0 and 2 inclusive
+    }
 }
 
 // for test and dev purposes
 bool dP_Sigfox::enablePublicKey(bool publicKeyEnable)
 {
-	return setMemoryConfigParameter(PUBLICKEY_CONFIG_MEMORY_ADDR, publicKeyEnable);		// 0: unique ID+KEY, 1: public ID+KEY
+    return setMemoryConfigParameter(PUBLICKEY_CONFIG_MEMORY_ADDR, publicKeyEnable);    // 0: unique ID+KEY, 1: public ID+KEY
 }
 
-bool dP_Sigfox::setTxRetransmissionDelay(char delay)		// delay in 10ms
+bool dP_Sigfox::setTxRetransmissionDelay(char delay)    // delay in 10ms
 {
-	if((delay >= 0) && (delay <= 200))
-	{
-		return setMemoryConfigParameter(TXDELAY_CONFIG_MEMORY_ADDR, delay);
-	}
-	else
-	{
-		return false;		// delay argument outside of allowed range
-	}
+    if((delay >= 0) && (delay <= 200))
+    {
+        return setMemoryConfigParameter(TXDELAY_CONFIG_MEMORY_ADDR, delay);
+    }
+    else
+    {
+        return false;    // delay argument outside of allowed range
+    }
 }
 
 bool dP_Sigfox::saveNetworkMode(SigfoxNetworkModeSetting networkMode)
 {
-  return setMemoryConfigParameter(NETWORKMODE_CONFIG_MEMORY_ADDR, networkMode);
+    return setMemoryConfigParameter(NETWORKMODE_CONFIG_MEMORY_ADDR, networkMode);
 }
 
 bool dP_Sigfox::setUartBaudRate(char baud)
 {
 /* Baud rate settings:
-	0x01: 2400
-	0x02: 4800
-	0x03: 9600
-	0x04: 14400
-	0x05: 19200
-	0x06: 28800
-	0x07: 38400
-	0x08: 57600
-	0x09: 76800
-	0x0A: 115200
-	0x0B: 230400  */
-	if((baud >= 0x01) && (baud <= 0x0B))
-	{
-		return setMemoryConfigParameter(UARTBAUD_CONFIG_MEMORY_ADDR, baud);
-	}
-	else
-	{
-		return false;		// baud rate argument outside of permitted range
-	}
+    0x01: 2400
+    0x02: 4800
+    0x03: 9600
+    0x04: 14400
+    0x05: 19200
+    0x06: 28800
+    0x07: 38400
+    0x08: 57600
+    0x09: 76800
+    0x0A: 115200
+    0x0B: 230400  */
+    if((baud >= 0x01) && (baud <= 0x0B))
+    {
+        return setMemoryConfigParameter(UARTBAUD_CONFIG_MEMORY_ADDR, baud);
+    }
+    else
+    {
+        return false;    // baud rate argument outside of permitted range
+    }
 
 }
 
 bool dP_Sigfox::setUartFlowControl(SigfoxUartFlowControl flowControl)
 {
-	return setMemoryConfigParameter(UARTFLOWCTRL_CONFIG_MEMORY_ADDR, flowControl);
+    return setMemoryConfigParameter(UARTFLOWCTRL_CONFIG_MEMORY_ADDR, flowControl);
 }
 
 
 int dP_Sigfox::readPkt(char *rxPkt)
 {
-  if(serial().available())
-  {
-    int len = serial().peek();
-    if(serial().available() > len)
+    if(serial().available())
     {
-      serial().read();  //discard length byte
-      for(int i = 0; i < len; i++)
-      {
-        rxPkt[i] = serial().read();
-      }
-      return len;
+        int len = serial().peek();
+        if(serial().available() > len)
+        {
+            serial().read();  //discard length byte
+            for(int i = 0; i < len; i++)
+            {
+                rxPkt[i] = serial().read();
+            }
+            return len;
+        }
     }
-  }
-  return 0;
+    return 0;
 }
 
 
 void dP_Sigfox::transmitPkt(char *txPayload, char payloadLen)
 {
-  //send length byte
-  serial().write(payloadLen);
-  //send payload
-  for(int i = 0; i < payloadLen; i++)
-  {
-    serial().write(txPayload[i]);
-  }
+    //send length byte
+    serial().write(payloadLen);
+    //send payload
+    for(int i = 0; i < payloadLen; i++)
+    {
+        serial().write(txPayload[i]);
+    }
 }
 
 void dP_Sigfox::transmitSingleBit(bool data)
 {
-  //send length byte
-  serial().write(0x10);
-  //send payload
-  serial().write(data ? 0x01 : 0x00); // data is one byte where only the LSB is relevant
+    //send length byte
+    serial().write(0x10);
+    //send payload
+    serial().write(data ? 0x01 : 0x00); // data is one byte where only the LSB is relevant
 }
 
 
 bool dP_Sigfox::setOutOfBandPktPeriod(char period)
 {
-  if((period >= 0) && (period <= 15))
-  {
-    return setMemoryConfigParameter(OOB_PKT_PERIOD_CMD, period);     // 0: disabled, 1-15: hours
-  }
-  else
-  {
-    return false;   // period argument outside of allowed range
-  }
+    if((period >= 0) && (period <= 15))
+    {
+        return setMemoryConfigParameter(OOB_PKT_PERIOD_CMD, period);     // 0: disabled, 1-15: hours
+    }
+    else
+    {
+        return false;   // period argument outside of allowed range
+    }
 }
 
 void dP_Sigfox::disableOutOfBandPkt()
 {
-  setOutOfBandPktPeriod(0);
+    setOutOfBandPktPeriod(0);
 }

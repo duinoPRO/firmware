@@ -43,40 +43,40 @@ char id[12];
 
 
 void setup() {
-  // Begin using the instance of the Sigfox module
-  mySigfox.begin();
+    // Begin using the instance of the Sigfox module
+    mySigfox.begin();
 
-  delay(500);
+    delay(500);
 
-  //empty buffer
-  while(mySigfox.serial().available())
-  {
-    mySigfox.serial().read();
-  }
+    //empty buffer
+    while(mySigfox.serial().available())
+    {
+        mySigfox.serial().read();
+    }
 
-  mySigfox.enterConfigMode(); // you must explictly enter config mode before setting config parameters
+    mySigfox.enterConfigMode(); // you must explictly enter config mode before setting config parameters
 
-  // set network mode to uplink/downlink
-  mySigfox.setNetworkMode(dP_Sigfox::UPDOWN);
+    // set network mode to uplink/downlink
+    mySigfox.setNetworkMode(dP_Sigfox::UPDOWN);
 
-  // read ID
-  mySigfox.getId(id);
+    // read ID
+    mySigfox.getId(id);
 
-  // get RSSI
-  mySigfox.getRssi(&rssi);
-  // get temperature
-  mySigfox.getTemperature(&temp);
+    // get RSSI
+    mySigfox.getRssi(&rssi);
+    // get temperature
+    mySigfox.getTemperature(&temp);
 
-  mySigfox.exitConfigMode();  // you must explicitly exit config mode to return to idle mode
+    mySigfox.exitConfigMode();  // you must explicitly exit config mode to return to idle mode
 }
 
 
 void loop() {
-  char rxPkt[20];
-  int len;
+    char rxPkt[20];
+    int len;
 
-  if(len = mySigfox.readPkt(rxPkt))
-  {
-    // packet received
-  }
+    if(len = mySigfox.readPkt(rxPkt))
+    {
+        // packet received
+    }
 }
