@@ -29,7 +29,6 @@
 
 // Include the necessary libraries
 #include <dP_AccelMagno.h>
-//#include <SPI.h>
 
 // Define an instance of the Accel/Magno module, located on
 // board position 2
@@ -39,11 +38,10 @@ dP_AccelMagno myAccMag(2);
 float accX, accY, accZ, magX, magY, magZ;
 
 void setup() {
-  // Begin using SPI and the instance of the Accel/Magno module
-  SPI.begin();
+  // Begin using the instance of the Accel/Magno module
   myAccMag.begin();
 
-  // Initialize serial communication at 9600 bits per second
+  // Initialize serial communication at 9600 bits per second for DEBUG
   Serial.begin(9600);
 
   // Set the accelerometer and magnetometer full scales
@@ -51,8 +49,8 @@ void setup() {
   myAccMag.setMagnoFullScale(MAGNO_2GAUSS);
 
   // Enable the accelerometer and magnetometer
-  myAccMag.enableAccel(true);
-  myAccMag.enableMagno(true);
+  myAccMag.enableAccel();
+  myAccMag.enableMagno();
 }
 
 void loop() {
