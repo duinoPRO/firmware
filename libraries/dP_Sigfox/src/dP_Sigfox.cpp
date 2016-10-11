@@ -25,7 +25,7 @@
 #define RESET_PIN                         6
 
 #define RC232BAUD                         19200
-#define DEFAULT_RFPOWER                   100     // 0-255.  PA step down value from the maximum power. Default setting (0x05) gives +25 dBm conducted power.
+#define DEFAULT_RFPOWER                   5     // 0-255.  PA step down value from the maximum power. Default setting (0x05) gives +25 dBm conducted power.
 
 #define WAITFORPROMPT_TIMEOUT_INIT        500
 #define WAITFORPROMPT_TIMEOUT             200
@@ -53,20 +53,89 @@
 #define RFDOMAIN_CONFIG_MEMORY_ADDR       0x00
 #define RFPOWER_CONFIG_MEMORY_ADDR        0x01
 #define SLEEPMODE_CONFIG_MEMORY_ADDR      0x04
-#define RSSIMODE_CONFIG_MEMORY_ADDR        0x05
+#define RSSIMODE_CONFIG_MEMORY_ADDR       0x05
 #define TIMEOUT_CONFIG_MEMORY_ADDR        0x10
 #define EOSCHAR_CONFIG_MEMORY_ADDR        0x36
-#define RETRANSMIT_CONFIG_MEMORY_ADDR      0x27
+#define RETRANSMIT_CONFIG_MEMORY_ADDR     0x27
 #define PUBLICKEY_CONFIG_MEMORY_ADDR      0x28
 #define TXDELAY_CONFIG_MEMORY_ADDR        0x2E
 #define NETWORKMODE_CONFIG_MEMORY_ADDR    0x3B
-#define UARTBAUD_CONFIG_MEMORY_ADDR        0x30
+#define UARTBAUD_CONFIG_MEMORY_ADDR       0x30
 #define UARTFLOWCTRL_CONFIG_MEMORY_ADDR   0x35
 
 
-dP_Sigfox::dP_Sigfox(int id, int id2) : dP_Module(id, id2)
+dP_Sigfox::dP_Sigfox(int id, int id2)
+    : dP_Module(id, id2)
+    , _softSerial(SoftwareSerial(7,15))    //handles TX to Sigfox module
 {
 };
+
+
+// work around to serial port clash using Software Serial
+SoftwareSerial& dP_Sigfox::softSerial()
+{
+    return _softSerial;
+};
+
+void dP_Sigfox::serialBegin(unsigned long baud)
+{
+    softSerial().begin(baud);
+}
+
+size_t dP_Sigfox::serialWrite(uint8_t data)
+{
+    return softSerial().write(data);
+}
+size_t dP_Sigfox::serialWrite(unsigned long data)
+{
+    return softSerial().write(data);
+}
+
+size_t dP_Sigfox::serialWrite(long data)
+{
+    return softSerial().write(data);
+}
+
+size_t dP_Sigfox::serialWrite(unsigned int data)
+{
+    return softSerial().write(data);
+}
+
+size_t dP_Sigfox::serialWrite(int data)
+{
+    return softSerial().write(data);
+}
+
+size_t dP_Sigfox::serialWrite(const char *str)
+{
+    return softSerial().write(str);
+}
+
+size_t dP_Sigfox::serialWrite(const uint8_t *buff, size_t size)
+{
+    return softSerial().write(buff, size);
+}
+
+int dP_Sigfox::serialAvailable(void)
+{
+	duinoPRO baseboard;
+    baseboard.serialModuleMode();
+    return Serial.available();
+}
+
+int dP_Sigfox::serialPeek(void)
+{
+	duinoPRO baseboard;
+    baseboard.serialModuleMode();
+    return Serial.peek();
+}
+
+int dP_Sigfox::serialRead(void)
+{
+	duinoPRO baseboard;
+    baseboard.serialModuleMode();
+    return Serial.read();
+}
 
 
 void dP_Sigfox::begin()
@@ -74,29 +143,26 @@ void dP_Sigfox::begin()
     duinoPRO baseboard;
     baseboard.serialModuleMode();
 
-    //disable config mode; CONFIG_PIN is active low
-    pin(CONFIG_PIN).mode(OUTPUT);
-    pin(CONFIG_PIN).write(HIGH);
+    serial().begin(RC232BAUD);
+    serialBegin(RC232BAUD);
 
     // set frequency to AU/NZ settings
     setRfFreqDomain(dP_Sigfox::ANZ);
     // set RF power
     setRfPower(DEFAULT_RFPOWER);
-
-    serial().begin(RC232BAUD);
 }
 
 
 bool dP_Sigfox::enterConfigMode()
 {
-    serial().write(ENTER_CONFIG_CMD);
+    serialWrite(ENTER_CONFIG_CMD);
     return waitForPrompt(WAITFORPROMPT_TIMEOUT);
 }
 
 
 void dP_Sigfox::exitConfigMode()
 {
-    serial().write(EXIT_CONFIG_CMD);
+    serialWrite(EXIT_CONFIG_CMD);
 }
 
 
@@ -106,9 +172,9 @@ bool dP_Sigfox::waitForPrompt(int timeout)  //timeout in ~ms
 
     while(timeoutCount < timeout)
     {
-        if(serial().available())
+        if(serialAvailable())
         {
-            if((char)serial().read() == '>')
+            if((char)serialRead() == '>')
             {
                 return true;
             }
@@ -145,16 +211,19 @@ bool dP_Sigfox::sendConfigCmd(char cmd, char arg, char *resp)
 
 bool dP_Sigfox::sendConfigCmd(char cmd, char *arg, int argc, char *ret, int retc)
 {
-    serial().write(cmd);
-    if(!waitForPrompt(WAITFORPROMPT_TIMEOUT)) { return false };
-    serial().write((uint8_t*)arg, argc);
+    serialWrite(cmd);
+    if(argc != 0)
+    {
+        if(!waitForPrompt(WAITFORPROMPT_TIMEOUT)) { return false; }
+        serialWrite((uint8_t*)arg, argc);
+    }
 
     int i = 0;
     for (int timeout = 0; (timeout < RESPONSE_TIMEOUT) && (i < retc);)
     {
-        if(serial().available())
+        if(serialAvailable())
         {
-            ret[i++] = serial().read();
+            ret[i++] = serialRead();
             timeout = 0;
         }
         else
@@ -174,8 +243,8 @@ bool dP_Sigfox::sendConfigCmd(char cmd, char *arg, int argc, char *ret, int retc
 bool dP_Sigfox::setMemoryConfigParameter(char addr, char value)
 {
     sendConfigCmd(MEMORY_CONFIG_CMD);
-    serial().write(addr);
-    serial().write(value);
+    serialWrite(addr);
+    serialWrite(value);
     sendConfigCmd(END_MEMORY_CONFIG_CMD);
 
     return true;
@@ -236,7 +305,7 @@ bool dP_Sigfox::sleep()
 
 void dP_Sigfox::exitSleep()
 {
-        serial().write(EXIT_SLEEP_CMD);
+    serialWrite(EXIT_SLEEP_CMD);
 }
 
 
@@ -333,15 +402,15 @@ bool dP_Sigfox::setUartFlowControl(SigfoxUartFlowControl flowControl)
 
 int dP_Sigfox::readPkt(char *rxPkt)
 {
-    if(serial().available())
+    if(serialAvailable())
     {
-        int len = serial().peek();
-        if(serial().available() > len)
+        int len = serialPeek();
+        if(serialAvailable() > len)
         {
-            serial().read();  //discard length byte
+            serialRead();  //discard length byte
             for(int i = 0; i < len; i++)
             {
-                rxPkt[i] = serial().read();
+                rxPkt[i] = serialRead();
             }
             return len;
         }
@@ -353,20 +422,20 @@ int dP_Sigfox::readPkt(char *rxPkt)
 void dP_Sigfox::transmitPkt(char *txPayload, char payloadLen)
 {
     //send length byte
-    serial().write(payloadLen);
+    serialWrite(payloadLen);
     //send payload
     for(int i = 0; i < payloadLen; i++)
     {
-        serial().write(txPayload[i]);
+        serialWrite(txPayload[i]);
     }
 }
 
 void dP_Sigfox::transmitSingleBit(bool data)
 {
     //send length byte
-    serial().write(0x10);
+    serialWrite(0x10);
     //send payload
-    serial().write(data ? 0x01 : 0x00); // data is one byte where only the LSB is relevant
+    serialWrite(data ? 0x01 : 0x00);     // data is one byte where only the LSB is relevant
 }
 
 

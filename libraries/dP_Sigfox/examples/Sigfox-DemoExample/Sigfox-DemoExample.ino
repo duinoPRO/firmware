@@ -26,6 +26,8 @@
 
 // Include the necessary libraries
 #include <dP_Sigfox.h>
+//FOR DEBUG
+#include <duinoPRO.h>
 
 
 #define RSSI_ENABLE_ADDR        0x05
@@ -37,14 +39,25 @@
 // board position 6/7
 dP_Sigfox mySigfox(6,7);
 
+duinoPRO baseboard;
 
 char rssi, temp;
 char id[12];
+
+char myTestMsg[]="duinoPRO-Sfx";
 
 
 void setup() {
     // Begin using the instance of the Sigfox module
     mySigfox.begin();
+
+    //DEBUG
+    Serial.begin(19200);
+    while (!Serial) {
+      ; // wait for serial port to connect. Needed for native USB port only
+    }
+    baseboard.serialDebugMode();
+    Serial.print("K");
 
     delay(500);
 
@@ -68,6 +81,9 @@ void setup() {
     mySigfox.getTemperature(&temp);
 
     mySigfox.exitConfigMode();  // you must explicitly exit config mode to return to idle mode
+
+    // send a test message
+    mySigfox.transmitPkt(myTestMsg,strlen(myTestMsg));
 }
 
 
