@@ -118,33 +118,34 @@ size_t dP_Sigfox::serialWrite(const uint8_t *buff, size_t size)
 
 int dP_Sigfox::serialAvailable(void)
 {
-	duinoPRO baseboard;
-    baseboard.serialModuleMode();
+    duinoPRO::serialModuleMode();
     return Serial.available();
 }
 
 int dP_Sigfox::serialPeek(void)
 {
-	duinoPRO baseboard;
-    baseboard.serialModuleMode();
+    duinoPRO::serialModuleMode();
     return Serial.peek();
 }
 
 int dP_Sigfox::serialRead(void)
 {
-	duinoPRO baseboard;
-    baseboard.serialModuleMode();
+    duinoPRO::serialModuleMode();
     return Serial.read();
 }
 
 
 void dP_Sigfox::begin()
 {
-    duinoPRO baseboard;
-    baseboard.serialModuleMode();
+    duinoPRO::serialModuleMode();
 
     serial().begin(RC232BAUD);
     serialBegin(RC232BAUD);
+    // Generate a reset_n for the Sigfox module
+    pin(6).mode(OUTPUT);
+    pin(6).write(LOW);
+    delay(100);
+    pin(6).write(HIGH);
 
     // set frequency to AU/NZ settings
     setRfFreqDomain(dP_Sigfox::ANZ);
@@ -155,6 +156,7 @@ void dP_Sigfox::begin()
 
 bool dP_Sigfox::enterConfigMode()
 {
+    duinoPRO::serialModuleMode();
     serialWrite(ENTER_CONFIG_CMD);
     return waitForPrompt(WAITFORPROMPT_TIMEOUT);
 }
@@ -211,6 +213,7 @@ bool dP_Sigfox::sendConfigCmd(char cmd, char arg, char *resp)
 
 bool dP_Sigfox::sendConfigCmd(char cmd, char *arg, int argc, char *ret, int retc)
 {
+    duinoPRO::serialModuleMode();
     serialWrite(cmd);
     if(argc != 0)
     {
